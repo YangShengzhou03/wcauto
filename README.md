@@ -21,6 +21,9 @@
     <a href="https://github.com/YangShengzhou03/wcauto/pulls">
       <img src="https://img.shields.io/github/issues-pr/YangShengzhou03/wcauto?style=for-the-badge&logo=github&color=orange&labelColor=000000" alt="GitHub Pull Requests">
     </a>
+    <a href="https://github.com/YangShengzhou03/wcauto/wiki">
+      <img src="https://img.shields.io/badge/Wiki-Documentation-blue?style=for-the-badge&logo=github" alt="Wiki Documentation">
+    </a>
   </div>
 
   <div>
@@ -44,45 +47,38 @@
 
 </div>
 
-## 贡献者
+## 📖 目录
 
-感谢所有为本项目做出贡献的开发者！
-
-<!-- 贡献者头像 -->
-[![Contributors](https://contrib.rocks/image?repo=YangShengzhou03/wcauto)](https://github.com/YangShengzhou03/wcauto/graphs/contributors)
-
-<!-- 添加更多贡献者头像 -->
-<!-- 
-<a href="https://github.com/username">
-  <img src="https://avatars.githubusercontent.com/u/your_user_id?v=4" width="50" height="50" alt="username" style="border-radius: 50%; margin-right: 10px;">
-</a>
--->
-
-## 目录
-1. [✨ 项目概述](#-项目概述)
-2. [🚀 功能特性](#-功能特性)
-3. [🔧 工作原理](#-工作原理)
-4. [📦 安装使用](#-安装使用)
-5. [💡 快速开始](#-快速开始)
-6. [🔧 详细使用方法](#-详细使用方法)
-7. [🚀 部署指南](#-部署指南)
-8. [🔧 API 文档](#-api-文档)
-9. [📁 项目结构](#-项目结构)
-10. [⚠️ 注意事项](#️-注意事项)
-11. [🤝 参与贡献](#-参与贡献)
-12. [📜 开源许可](#-开源许可)
+- [✨ 项目概述](#-项目概述)
+- [🚀 功能特性](#-功能特性)
+- [📦 快速开始](#-快速开始)
+- [🔧 安装指南](#-安装指南)
+- [💡 使用教程](#-使用教程)
+- [📚 API 文档](#-api-文档)
+- [🏗️ 架构设计](#️-架构设计)
+- [🚀 部署指南](#-部署指南)
+- [🔍 常见问题](#-常见问题)
+- [🤝 参与贡献](#-参与贡献)
+- [📜 开源许可](#-开源许可)
+- [👥 贡献者](#-贡献者)
 
 ## ✨ 项目概述
 
 **wcauto** 是一个基于 Python 的微信桌面版自动化操作库，专门为 Windows 平台设计。通过模拟用户操作，实现微信消息的自动发送、文件传输、窗口控制等功能。
 
-**💡 适用场景**
-- 自动化消息通知
-- 批量消息发送
-- 文件自动传输
-- 定时消息提醒
-- 微信机器人开发
-- 自动化测试
+### 💡 适用场景
+- **自动化消息通知**：系统监控、定时提醒
+- **批量消息发送**：营销推广、群发通知
+- **文件自动传输**：备份文件、文档同步
+- **定时消息提醒**：日程安排、任务提醒
+- **微信机器人开发**：智能客服、自动回复
+- **自动化测试**：微信功能测试、集成测试
+
+### 🎯 设计理念
+- **简单易用**：提供直观的 API 接口，降低使用门槛
+- **稳定可靠**：多重异常处理机制，确保操作成功率
+- **灵活扩展**：模块化设计，支持自定义功能扩展
+- **性能优化**：智能缓存和资源管理，提升执行效率
 
 ## 🚀 功能特性
 
@@ -101,110 +97,143 @@
 - **热键模拟**：支持多种键盘快捷键操作
 - **文件处理**：支持通过剪贴板传输文件
 
-## 🔧 工作原理
+## 📦 快速开始
 
-### 技术架构
-
-**wcauto** 采用了多层架构设计，主要包括以下几个核心组件：
-
-1. **窗口控制层**：基于 `uiautomation` 和 `pyautogui` 实现
-   - 微信窗口的查找与激活
-   - 窗口元素定位与交互
-   - 坐标计算与点击操作
-
-2. **剪贴板管理层**：基于 `pyperclip` 和系统剪贴板 API
-   - 文本内容复制与粘贴
-   - 文件路径处理与传输
-   - 跨进程数据交换
-
-3. **进程管理层**：基于 `psutil` 实现
-   - 微信进程检测
-   - 系统资源监控
-   - 异常状态处理
-
-4. **用户交互层**：基于 `pyautogui` 实现
-   - 键盘事件模拟
-   - 鼠标点击与移动
-   - 热键组合操作
-
-### 核心算法
-
-#### 1. 窗口查找算法
+### 基本用法
 
 ```python
-def find_wechat_window(self):
-    # 遍历所有窗口控件
-    for window in all_windows:
-        window_name = window.Name if window.Name else ""
-        class_name = window.ClassName if window.ClassName else ""
-        
-        # 通过名称和类名匹配微信窗口
-        if ("微信" in window_name or "WeChat" in window_name or 
-            "WeChat" in class_name or "微信" in class_name or
-            "Chat" in class_name):
-            return window
-    return None
+from wcauto import WeChat
+
+# 创建微信自动化实例
+wx = WeChat()
+
+# 发送消息给指定联系人
+result = wx.SendMsg("你好，这是一条测试消息！", "文件传输助手")
+
+if result:
+    print("消息发送成功！")
+else:
+    print("消息发送失败！")
 ```
 
-#### 2. 消息发送流程
-
-1. **激活微信窗口**：调用 `activate_wechat()` 方法
-2. **搜索联系人**（可选）：使用 `Ctrl+F` 快捷键搜索联系人
-3. **定位输入区域**：计算窗口相对坐标，点击消息输入框
-4. **复制消息内容**：将消息文本复制到剪贴板
-5. **粘贴消息内容**：使用 `Ctrl+V` 粘贴消息
-6. **发送消息**：使用回车键或点击发送按钮
-
-#### 3. 文件传输机制
-
-文件传输使用了 Windows 系统的特殊剪贴板格式 `CF_HDROP`：
+### 发送文件
 
 ```python
-def _set_clipboard_files(self, file_paths):
-    # 创建 DROPFILES 结构体
-    df = DROPFILES()
-    df.pFiles = df_size
-    df.fWide = True
-    
-    # 将文件路径列表写入剪贴板
-    # 使用 CF_HDROP 格式标识文件列表
-    user32.SetClipboardData(CF_HDROP, hGlobal)
+from wcauto import WeChat
+
+# 初始化
+wx = WeChat()
+
+# 发送文件给指定联系人
+result = wx.SendFiles(r"C:\path\to\file.pdf", "文件传输助手")
+
+if result:
+    print("文件发送成功！")
+else:
+    print("文件发送失败！")
 ```
 
-### 异常处理机制
+### 完整示例
 
-项目实现了多层次的异常处理：
+```python
+from wcauto import WeChat
 
-1. **窗口操作异常**：当无法找到或激活微信窗口时，尝试使用快捷键唤醒
-2. **剪贴板异常**：当剪贴板操作失败时，记录错误并返回失败状态
-3. **坐标计算异常**：使用 `_get_safe_coordinates()` 确保坐标在屏幕范围内
-4. **文件操作异常**：检查文件路径有效性，处理文件不存在的情况
+# 初始化
+wx = WeChat()
 
-### 性能优化
+# 检查微信是否运行
+if wx.check_wechat_running():
+    print("微信正在运行")
+else:
+    print("微信未运行，请先启动微信")
 
-1. **窗口缓存**：使用 `_wechat_window_cache` 缓存微信窗口句柄，减少重复查找
-2. **智能等待**：在关键操作后添加适当的等待时间，提高操作成功率
-3. **资源管理**：正确释放系统资源，避免内存泄漏
-4. **日志记录**：详细的日志记录，便于问题排查和性能分析
+# 发送消息（支持使用发送按钮）
+wx.SendMsg("这是一条测试消息", "好友名称", use_send_button=True)
+```
 
-## 📦 安装使用
+## 🔧 安装指南
 
 ### 环境要求
-- **操作系统**：Windows 10/11
-- **Python**：3.8 及以上版本
-- **微信版本**：微信桌面版（需要提前安装并登录）
 
-### 安装依赖
+| 组件 | 要求 | 说明 |
+|------|------|------|
+| **操作系统** | Windows 10/11 | 仅支持 Windows 平台 |
+| **Python** | 3.8 及以上版本 | 推荐使用 Python 3.9+ |
+| **微信版本** | 微信桌面版 | 需要提前安装并登录 |
+
+### 安装方法
+
+#### 方法一：使用 pip 安装（推荐）
+
 ```bash
-pip install -r requirements.txt
+# 从 GitHub 安装最新版本
+pip install git+https://github.com/YangShengzhou03/wcauto.git
+
+# 或者从 PyPI 安装（如果已发布）
+# pip install wcauto
 ```
 
-依赖包说明：
-- `pyautogui>=0.9.53`：鼠标键盘自动化控制
-- `pyperclip>=1.8.2`：剪贴板操作
-- `uiautomation>=2.0.15`：Windows UI 自动化
-- `psutil>=5.8.0`：进程管理
-- `pywin32>=300`：Windows API 接口
+#### 方法二：源码安装
+
+```bash
+# 克隆项目
+git clone https://github.com/YangShengzhou03/wcauto.git
+cd wcauto
+
+# 创建虚拟环境（推荐）
+python -m venv venv
+
+# 激活虚拟环境
+# Windows CMD:
+venv\Scripts\activate.bat
+# Windows PowerShell:
+venv\Scripts\Activate.ps1
+
+# 安装依赖
+pip install -r requirements.txt
+
+# 安装包
+pip install -e .
+```
+
+### 依赖说明
+
+| 依赖包 | 版本 | 用途 |
+|--------|------|------|
+| `pyautogui` | >=0.9.53 | 鼠标键盘自动化控制 |
+| `pyperclip` | >=1.8.2 | 剪贴板操作 |
+| `uiautomation` | >=2.0.15 | Windows UI 自动化 |
+| `psutil` | >=5.8.0 | 进程管理 |
+| `pywin32` | >=300 | Windows API 接口 |
+
+### 验证安装
+
+```python
+# 创建验证脚本 verify_installation.py
+from wcauto import WeChat
+
+def verify_installation():
+    """验证安装是否成功"""
+    try:
+        wx = WeChat()
+        print("✅ wcauto 导入成功")
+        
+        # 检查微信进程
+        if wx.check_wechat_running():
+            print("✅ 微信进程检测正常")
+        else:
+            print("⚠️ 微信未运行（正常情况）")
+            
+        print("✅ 安装验证通过！")
+        return True
+        
+    except Exception as e:
+        print(f"❌ 安装验证失败: {e}")
+        return False
+
+if __name__ == "__main__":
+    verify_installation()
+```
 
 ## 💡 快速开始
 
@@ -1465,16 +1494,9 @@ wcauto/
 └── README.md             # 项目说明文档
 ```
 
-## ⚠️ 注意事项
+## ❓ 常见问题 (FAQ)
 
-### 重要提醒
-1. **微信版本**：仅支持微信桌面版，不支持网页版微信
-2. **窗口要求**：微信窗口需要可见，不能最小化到系统托盘
-3. **权限要求**：需要以管理员权限运行程序
-4. **兼容性**：不同微信版本可能需要调整坐标计算
-5. **使用限制**：请遵守微信使用条款，避免滥用
-
-### 常见问题
+### 基础问题
 
 **Q: 消息发送失败怎么办？**
 A: 
@@ -1482,33 +1504,497 @@ A:
 - 确认联系人名称正确
 - 尝试使用 `use_send_button=True` 参数
 - 检查程序是否以管理员权限运行
+- 确保微信窗口可见且未被遮挡
 
 **Q: 文件发送失败怎么办？**
 A:
 - 确认文件路径正确且文件存在
-- 检查文件大小是否超过微信限制
+- 检查文件大小是否超过微信限制（通常100MB以内）
 - 确认联系人名称正确
 - 检查程序是否以管理员权限运行
+- 确保文件类型不被微信限制
 
 **Q: 如何提高发送成功率？**
 A:
 - 确保微信窗口可见且未被遮挡
 - 适当增加操作之间的等待时间
 - 使用最新版本的微信
+- 避免在发送过程中操作鼠标键盘
+- 使用 `use_send_button=True` 参数
 
 **Q: 支持群聊消息发送吗？**
 A: 是的，只需将群聊名称作为 `who` 参数传入即可。
 
+### 技术问题
+
+**Q: 程序提示"无法找到微信窗口"怎么办？**
+A:
+- 确保微信已启动并登录
+- 检查微信窗口是否最小化到系统托盘
+- 尝试重启微信
+- 确认程序以管理员权限运行
+
+**Q: 坐标计算不准确怎么办？**
+A:
+- 不同微信版本可能需要调整坐标计算
+- 检查屏幕分辨率设置
+- 尝试调整微信窗口大小和位置
+- 查看项目Wiki中的坐标校准指南
+
+**Q: 如何调试程序运行问题？**
+A:
+- 启用详细日志记录
+- 检查 `wcauto.log` 文件
+- 使用调试模式运行程序
+- 查看项目Issues中是否有类似问题
+
+### 部署问题
+
+**Q: 依赖安装失败怎么办？**
+A:
+- 检查Python版本（需要3.8+）
+- 尝试使用国内镜像源：`pip install -r requirements.txt -i https://pypi.tuna.tsinghua.edu.cn/simple`
+- 确保网络连接正常
+- 查看详细的错误信息
+
+**Q: 打包后的程序无法运行怎么办？**
+A:
+- 检查是否缺少必要的依赖库
+- 尝试重新打包
+- 使用源码方式运行测试
+- 查看打包日志中的警告信息
+
+**Q: 如何配置定时任务？**
+A:
+- 编辑 `config.ini` 文件中的 `schedule` 部分
+- 使用Windows任务计划程序
+- 参考部署指南中的详细说明
+- 查看项目Wiki中的定时任务配置教程
+
+### 安全与合规
+
+**Q: 使用这个工具安全吗？**
+A:
+- 本项目完全开源，代码透明可审查
+- 不收集任何用户数据
+- 仅操作微信界面，不涉及微信内部数据
+- 请遵守微信使用条款，避免滥用
+
+**Q: 会被微信检测为异常行为吗？**
+A:
+- 合理使用通常不会被检测
+- 避免频繁、大批量发送消息
+- 建议用于个人自动化需求
+- 不要用于商业营销等违规用途
+
+## 🚀 部署教程
+
+### 快速部署（推荐）
+
+使用我们提供的自动化部署脚本，一键完成所有配置：
+
+```bash
+# 克隆项目
+git clone https://github.com/YangShengzhou03/wcauto.git
+cd wcauto
+
+# 运行自动化部署脚本
+python deploy.py
+```
+
+部署脚本将自动完成以下操作：
+- 安装所有必要的依赖包
+- 创建默认配置文件
+- 打包为可执行文件
+- 创建服务脚本
+- 生成桌面快捷方式
+
+### 手动部署
+
+如果您需要自定义配置，可以按照以下步骤手动部署：
+
+#### 1. 环境准备
+
+**系统要求：**
+- Windows 10/11 (64位)
+- Python 3.8 或更高版本
+- 微信桌面版 (已登录)
+
+**Python 环境配置：**
+```bash
+# 检查 Python 版本
+python --version
+
+# 如果未安装 Python，请从 https://www.python.org/downloads/ 下载安装
+```
+
+#### 2. 项目设置
+
+```bash
+# 克隆项目
+git clone https://github.com/YangShengzhou03/wcauto.git
+cd wcauto
+
+# 创建虚拟环境 (推荐)
+python -m venv venv
+
+# 激活虚拟环境
+# Windows CMD:
+venv\Scripts\activate.bat
+# Windows PowerShell:
+venv\Scripts\Activate.ps1
+
+# 安装依赖
+pip install -r requirements.txt
+```
+
+#### 3. 配置管理
+
+创建配置文件 `config.ini`：
+
+```ini
+[wechat]
+default_recipient = 文件传输助手
+use_send_button = false
+retry_count = 3
+retry_interval = 2
+
+[logging]
+level = INFO
+file_path = wcauto.log
+max_size = 10485760  # 10MB
+backup_count = 5
+
+[schedule]
+enabled = true
+daily_time = 09:00
+```
+
+#### 4. 测试部署
+
+运行验证脚本检查部署是否成功：
+
+```bash
+python verify_deployment.py
+```
+
+### 生产环境部署
+
+#### 1. 打包为可执行文件
+
+使用 PyInstaller 将项目打包为独立的可执行文件：
+
+```bash
+# 安装 PyInstaller
+pip install pyinstaller
+
+# 打包为单个可执行文件
+pyinstaller --onefile --name wcauto_tool wcauto/wcauto.py
+```
+
+#### 2. 创建系统服务
+
+使用 Windows 任务计划程序创建定时任务：
+
+1. 打开 "任务计划程序" (Task Scheduler)
+2. 创建基本任务
+3. 设置触发器（例如：系统启动时）
+4. 设置操作为启动程序，选择打包后的可执行文件
+5. 配置任务以最高权限运行
+
+#### 3. 使用 Docker 部署 (高级)
+
+虽然 wcauto 主要用于 Windows 环境，但可以通过 Windows 容器部署：
+
+```dockerfile
+# Dockerfile.windows
+FROM mcr.microsoft.com/windows/servercore:ltsc2019
+
+# 安装 Python
+RUN powershell -Command \
+    $ProgressPreference = 'SilentlyContinue'; \
+    Invoke-WebRequest -Uri https://www.python.org/ftp/python/3.8.10/python-3.8.10-amd64.exe -OutFile python-installer.exe; \
+    Start-Process python-installer.exe -ArgumentList '/quiet InstallAllUsers=1 PrependPath=1' -Wait; \
+    Remove-Item python-installer.exe
+
+# 设置工作目录
+WORKDIR /app
+
+# 复制项目文件
+COPY . .
+
+# 安装依赖
+RUN pip install -r requirements.txt
+
+# 设置入口点
+CMD ["python", "wcauto_service.py"]
+```
+
+### 部署最佳实践
+
+#### 1. 监控与日志
+
+- 启用日志轮转功能
+- 定期检查日志文件
+- 设置性能监控
+- 配置错误告警
+
+#### 2. 备份策略
+
+- 定期备份配置文件
+- 保存重要日志
+- 备份自定义脚本
+
+#### 3. 安全考虑
+
+- 使用虚拟环境
+- 定期更新依赖
+- 限制程序权限
+- 监控异常行为
+
+## 🐛 问题反馈
+
+如果您在使用过程中遇到问题，请通过以下方式反馈：
+
+### GitHub Issues
+[![GitHub Issues](https://img.shields.io/github/issues/YangShengzhou03/wcauto?style=for-the-badge)](https://github.com/YangShengzhou03/wcauto/issues)
+
+- 报告Bug或问题
+- 提出功能建议
+- 讨论技术实现
+
+### 项目Wiki
+[![Documentation](https://img.shields.io/badge/docs-wiki-blue?style=for-the-badge)](https://github.com/YangShengzhou03/wcauto/wiki)
+
+- 详细的使用教程
+- 技术文档和API参考
+- 常见问题解答
+- 最佳实践指南
+
+### 反馈模板
+
+为了高效解决问题，请按照以下模板提交反馈：
+
+```markdown
+## 问题描述
+[清晰描述遇到的问题]
+
+## 环境信息
+- 操作系统：Windows 10/11
+- Python版本：3.8.10
+- 微信版本：3.9.x
+- wcauto版本：[填写版本号]
+
+## 重现步骤
+1. [步骤1]
+2. [步骤2]
+3. [步骤3]
+
+## 期望行为
+[描述期望的正常行为]
+
+## 实际行为
+[描述实际发生的错误行为]
+
+## 错误日志
+[粘贴相关的错误日志]
+
+## 附加信息
+[其他相关信息或截图]
+```
+
+## 🏗️ 架构设计
+
+### 系统架构
+
+wcauto 采用模块化设计，主要包含以下核心组件：
+
+```
+┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
+│   用户接口层     │    │   业务逻辑层     │    │   底层驱动层     │
+│                 │    │                 │    │                 │
+│ • API接口       │◄──►│ • 消息发送逻辑   │◄──►│ • 窗口操作      │
+│ • 配置管理      │    │ • 文件传输逻辑   │    │ • 键盘模拟      │
+│ • 日志记录      │    │ • 异常处理      │    │ • 鼠标控制      │
+└─────────────────┘    └─────────────────┘    └─────────────────┘
+```
+
+### 核心算法
+
+#### 1. 窗口查找算法
+```python
+def find_wechat_window():
+    """查找微信窗口的优化算法"""
+    # 使用多条件匹配策略
+    # 1. 窗口标题匹配
+    # 2. 进程名验证
+    # 3. 窗口类名检查
+    # 4. 坐标位置验证
+```
+
+#### 2. 消息发送算法
+```python
+def send_message_algorithm():
+    """消息发送的核心算法"""
+    # 1. 激活目标窗口
+    # 2. 定位输入框
+    # 3. 清空现有内容
+    # 4. 输入消息文本
+    # 5. 选择发送方式
+    # 6. 验证发送结果
+```
+
+#### 3. 文件传输算法
+```python
+def file_transfer_algorithm():
+    """文件传输的核心算法"""
+    # 1. 定位文件按钮
+    # 2. 选择文件路径
+    # 3. 等待文件上传
+    # 4. 确认发送操作
+    # 5. 验证传输结果
+```
+
+### 性能优化
+
+#### 1. 缓存机制
+- 窗口句柄缓存
+- 坐标位置缓存
+- 联系人列表缓存
+
+#### 2. 异步处理
+- 非阻塞窗口操作
+- 并行消息处理
+- 后台文件传输
+
+#### 3. 资源管理
+- 内存优化
+- 进程监控
+- 异常恢复
+
+### 扩展性设计
+
+#### 1. 插件系统
+支持通过插件扩展功能：
+- 消息模板插件
+- 定时任务插件
+- 监控告警插件
+
+#### 2. 配置驱动
+所有行为通过配置文件控制：
+- 窗口查找策略
+- 发送间隔设置
+- 重试机制配置
+
+#### 3. 接口抽象
+提供统一的接口层：
+- 消息发送接口
+- 文件传输接口
+- 状态查询接口
+
 ## 🤝 参与贡献
 
-欢迎提交 Issue 和 Pull Request 来改进这个项目！
+我们非常欢迎社区贡献！无论是报告bug、提出新功能建议，还是提交代码改进，都是对项目的宝贵支持。
 
-### 贡献流程
-1. Fork 本项目
-2. 创建特性分支 (`git checkout -b feature/AmazingFeature`)
-3. 提交更改 (`git commit -m 'Add some AmazingFeature'`)
-4. 推送到分支 (`git push origin feature/AmazingFeature`)
-5. 创建 Pull Request
+### 贡献指南
+
+#### 1. 报告问题
+- 使用 [GitHub Issues](https://github.com/YangShengzhou03/wcauto/issues) 报告bug
+- 提供详细的重现步骤和环境信息
+- 包含相关的错误日志和截图
+
+#### 2. 功能建议
+- 在 Issues 中描述新功能需求
+- 说明使用场景和预期效果
+- 讨论技术实现方案
+
+#### 3. 代码贡献
+
+**开发环境设置：**
+```bash
+# 1. Fork 项目
+# 2. 克隆你的 Fork
+git clone https://github.com/your-username/wcauto.git
+cd wcauto
+
+# 3. 创建开发分支
+git checkout -b feature/your-feature-name
+
+# 4. 安装开发依赖
+pip install -r requirements-dev.txt
+
+# 5. 运行测试
+python -m pytest tests/
+```
+
+**代码规范：**
+- 遵循 PEP 8 代码风格
+- 添加适当的注释和文档
+- 编写单元测试覆盖新功能
+- 确保所有测试通过
+
+**提交 Pull Request：**
+```bash
+# 1. 提交更改
+git add .
+git commit -m "feat: 添加新功能描述"
+
+# 2. 推送到你的分支
+git push origin feature/your-feature-name
+
+# 3. 在 GitHub 创建 Pull Request
+```
+
+### 贡献类型
+
+#### 🐛 Bug 修复
+- 修复已知问题
+- 改进错误处理
+- 增强稳定性
+
+#### ✨ 新功能
+- 添加新特性
+- 扩展API接口
+- 改进用户体验
+
+#### 📚 文档改进
+- 完善使用文档
+- 添加代码注释
+- 翻译多语言文档
+
+#### 🔧 性能优化
+- 优化算法效率
+- 减少资源占用
+- 改进响应速度
+
+#### 🧪 测试覆盖
+- 添加单元测试
+- 集成测试
+- 性能测试
+
+### 社区准则
+
+1. **尊重他人**：保持友好和专业的交流氛围
+2. **建设性反馈**：提供具体、有帮助的反馈
+3. **包容性**：欢迎不同背景和技能水平的贡献者
+4. **遵守规范**：遵循项目代码规范和贡献流程
+
+## 👥 贡献者
+
+感谢所有为这个项目做出贡献的开发者！
+
+### 核心贡献者
+
+[![Contributors](https://contrib.rocks/image?repo=YangShengzhou03/wcauto)](https://github.com/YangShengzhou03/wcauto/graphs/contributors)
+
+### 特别感谢
+
+感谢以下开发者的宝贵贡献：
+[![Contributors](https://contrib.rocks/image?repo=YangShengzhou03/wcauto)](https://github.com/YangShengzhou03/wcauto/graphs/contributors)
+
+### 成为贡献者
+
+想要加入贡献者行列？请参考 [贡献指南](#参与贡献) 开始你的第一次贡献！
 
 ## 📜 开源许可
 
@@ -1531,7 +2017,7 @@ copies or substantial portions of the Software.
 
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+FITNESS FOR A PARTICULAR PURPOSE AND NONINGRINGEMENT. IN NO EVENT SHALL THE
 AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
@@ -1542,4 +2028,6 @@ SOFTWARE.
 
 <div align="center">
   <sub>Built with ❤️ using Python and automation technologies</sub>
+  <br>
+  <sub>感谢所有贡献者和用户的支持！</sub>
 </div>
