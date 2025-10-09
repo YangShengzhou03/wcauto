@@ -2,7 +2,7 @@
   <h1>🤖 wcauto - 微信自动化工具</h1>
   
   <p>
-    <em>基于 Python 的微信桌面版自动化操作库，支持消息发送、窗口控制等功能</em>
+    <em>基于 Python 的微信桌面版自动化操作库，支持消息发送、文件传输、窗口控制等功能</em>
   </p>
 
   <div>
@@ -57,11 +57,12 @@
 
 ## ✨ 项目概述
 
-**wcauto** 是一个基于 Python 的微信桌面版自动化操作库，专门为 Windows 平台设计。通过模拟用户操作，实现微信消息的自动发送、窗口控制等功能。
+**wcauto** 是一个基于 Python 的微信桌面版自动化操作库，专门为 Windows 平台设计。通过模拟用户操作，实现微信消息的自动发送、文件传输、窗口控制等功能。
 
 **💡 适用场景**
 - 自动化消息通知
 - 批量消息发送
+- 文件自动传输
 - 定时消息提醒
 - 微信机器人开发
 - 自动化测试
@@ -71,6 +72,7 @@
 ### 🔧 核心功能
 - **微信窗口检测**：自动查找并激活微信窗口
 - **消息发送**：支持向指定联系人发送文本消息
+- **文件传输**：支持向指定联系人发送文件
 - **智能定位**：自动定位消息输入框和发送按钮
 - **异常处理**：包含多种异常处理机制，提高稳定性
 - **进程检测**：检查微信是否正在运行
@@ -80,6 +82,7 @@
 - **智能坐标计算**：根据窗口大小自动计算点击位置
 - **剪贴板操作**：使用剪贴板进行文本传输
 - **热键模拟**：支持多种键盘快捷键操作
+- **文件处理**：支持通过剪贴板传输文件
 
 ## 📦 安装使用
 
@@ -98,6 +101,7 @@ pip install -r requirements.txt
 - `pyperclip>=1.8.2`：剪贴板操作
 - `uiautomation>=2.0.15`：Windows UI 自动化
 - `psutil>=5.8.0`：进程管理
+- `pywin32>=300`：Windows API 接口
 
 ## 💡 快速开始
 
@@ -109,12 +113,28 @@ from wcauto import WeChat
 wx = WeChat()
 
 # 发送消息给指定联系人
-result = wx.SendMsg("文件传输助手", "你好，这是一条测试消息！")
+result = wx.SendMsg("你好，这是一条测试消息！", "文件传输助手")
 
 if result:
     print("消息发送成功！")
 else:
     print("消息发送失败！")
+```
+
+### 发送文件
+```python
+from wcauto import WeChat
+
+# 初始化
+wx = WeChat()
+
+# 发送文件给指定联系人
+result = wx.SendFiles(r"C:\path\to\file.pdf", "文件传输助手")
+
+if result:
+    print("文件发送成功！")
+else:
+    print("文件发送失败！")
 ```
 
 ### 使用示例
@@ -131,7 +151,7 @@ else:
     print("微信未运行，请先启动微信")
 
 # 发送消息（支持使用发送按钮）
-wx.SendMsg("好友名称", "这是一条测试消息", use_send_button=True)
+wx.SendMsg("这是一条测试消息", "好友名称", use_send_button=True)
 ```
 
 ## 🔧 API 文档
@@ -141,13 +161,23 @@ wx.SendMsg("好友名称", "这是一条测试消息", use_send_button=True)
 #### `__init__()`
 初始化微信自动化实例。
 
-#### `SendMsg(contact_name, message, use_send_button=False)`
+#### `SendMsg(message, who=None, use_send_button=False)`
 向指定联系人发送消息。
 
 **参数：**
-- `contact_name` (str): 联系人名称
 - `message` (str): 要发送的消息内容
-- `use_send_button` (bool): 是否使用发送按钮（默认使用回车键）
+- `who` (str, optional): 联系人名称，如果为None则发送到当前聊天
+- `use_send_button` (bool, optional): 是否使用发送按钮（默认使用回车键）
+
+**返回值：**
+- `bool`: 发送成功返回 True，失败返回 False
+
+#### `SendFiles(filepath, who=None)`
+向指定联系人发送文件。
+
+**参数：**
+- `filepath` (str): 要发送的文件路径
+- `who` (str, optional): 联系人名称，如果为None则发送到当前聊天
 
 **返回值：**
 - `bool`: 发送成功返回 True，失败返回 False
@@ -198,6 +228,13 @@ A:
 - 尝试使用 `use_send_button=True` 参数
 - 检查程序是否以管理员权限运行
 
+**Q: 文件发送失败怎么办？**
+A:
+- 确认文件路径正确且文件存在
+- 检查文件大小是否超过微信限制
+- 确认联系人名称正确
+- 检查程序是否以管理员权限运行
+
 **Q: 如何提高发送成功率？**
 A:
 - 确保微信窗口可见且未被遮挡
@@ -205,7 +242,7 @@ A:
 - 使用最新版本的微信
 
 **Q: 支持群聊消息发送吗？**
-A: 是的，只需将群聊名称作为 `contact_name` 参数传入即可。
+A: 是的，只需将群聊名称作为 `who` 参数传入即可。
 
 ## 🤝 参与贡献
 
