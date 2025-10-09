@@ -1,180 +1,253 @@
-# wcauto - WeChat Automation Library
+<div align="center">
+  <h1>🤖 wcauto - 微信自动化工具</h1>
+  
+  <p>
+    <em>基于 Python 的微信桌面版自动化操作库，支持消息发送、窗口控制等功能</em>
+  </p>
 
-[![Python Version](https://img.shields.io/badge/python-3.7+-blue.svg)](https://www.python.org/downloads/)
-[![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
-[![Status](https://img.shields.io/badge/status-beta-orange.svg)](https://github.com/yourusername/wcauto)
+  <div>
+    <a href="https://github.com/YangShengzhou03/wcauto/stargazers">
+      <img src="https://img.shields.io/github/stars/YangShengzhou03/wcauto?style=for-the-badge&logo=github&color=ffd33d&labelColor=000000" alt="GitHub Stars">
+    </a>
+    <a href="https://github.com/YangShengzhou03/wcauto/forks">
+      <img src="https://img.shields.io/github/forks/YangShengzhou03/wcauto?style=for-the-badge&logo=github&color=green&labelColor=000000" alt="GitHub Forks">
+    </a>
+    <a href="https://opensource.org/licenses/MIT">
+      <img src="https://img.shields.io/badge/License-MIT-yellow.svg?style=for-the-badge&logo=open-source-initiative&color=blue&labelColor=000000" alt="MIT License">
+    </a>
+    <a href="https://github.com/YangShengzhou03/wcauto/issues">
+      <img src="https://img.shields.io/github/issues/YangShengzhou03/wcauto?style=for-the-badge&logo=github&color=purple&labelColor=000000" alt="GitHub Issues">
+    </a>
+    <a href="https://github.com/YangShengzhou03/wcauto/pulls">
+      <img src="https://img.shields.io/github/issues-pr/YangShengzhou03/wcauto?style=for-the-badge&logo=github&color=orange&labelColor=000000" alt="GitHub Pull Requests">
+    </a>
+  </div>
 
-`wcauto` 是一个用于自动化微信消息发送的Python库，通过RPA技术实现高速、高准确度的消息发送。
+  <div>
+    <a href="https://www.python.org/">
+      <img src="https://img.shields.io/badge/Python-3.8+-blue?style=for-the-badge&logo=python" alt="Python Version">
+    </a>
+    <a href="https://pyautogui.readthedocs.io/">
+      <img src="https://img.shields.io/badge/PyAutoGUI-0.9.53+-green?style=for-the-badge&logo=python" alt="PyAutoGUI Version">
+    </a>
+    <a href="https://github.com/yinkaisheng/Python-UIAutomation-for-Windows">
+      <img src="https://img.shields.io/badge/UIAutomation-2.0.15+-orange?style=for-the-badge&logo=windows" alt="UIAutomation Version">
+    </a>
+    <a href="https://pypi.org/project/pyperclip/">
+      <img src="https://img.shields.io/badge/Pyperclip-1.8.2+-yellow?style=for-the-badge&logo=python" alt="Pyperclip Version">
+    </a>
+  </div>
 
-## 功能特点
+  <br />
+  
+  [![Star History Chart](https://api.star-history.com/svg?repos=YangShengzhou03/wcauto&type=Date)](https://star-history.com/#YangShengzhou03/wcauto&Date)
 
-- 🚀 **高速发送**：优化的发送流程，减少不必要的延迟
-- 🎯 **高准确度**：多重定位和备用方案，确保操作成功
-- 🔧 **灵活配置**：可自定义延迟参数和发送方式
-- 🛡️ **错误处理**：完善的异常处理和日志记录
-- 📝 **简单易用**：简洁的API设计，易于集成
+</div>
 
-## 安装
+## 目录
+1. [✨ 项目概述](#-项目概述)
+2. [🚀 功能特性](#-功能特性)
+3. [📦 安装使用](#-安装使用)
+4. [💡 快速开始](#-快速开始)
+5. [🔧 API 文档](#-api-文档)
+6. [📁 项目结构](#-项目结构)
+7. [⚠️ 注意事项](#️-注意事项)
+8. [🤝 参与贡献](#-参与贡献)
+9. [📜 开源许可](#-开源许可)
 
+## ✨ 项目概述
+
+**wcauto** 是一个基于 Python 的微信桌面版自动化操作库，专门为 Windows 平台设计。通过模拟用户操作，实现微信消息的自动发送、窗口控制等功能。
+
+**💡 适用场景**
+- 自动化消息通知
+- 批量消息发送
+- 定时消息提醒
+- 微信机器人开发
+- 自动化测试
+
+## 🚀 功能特性
+
+### 🔧 核心功能
+- **微信窗口检测**：自动查找并激活微信窗口
+- **消息发送**：支持向指定联系人发送文本消息
+- **智能定位**：自动定位消息输入框和发送按钮
+- **异常处理**：包含多种异常处理机制，提高稳定性
+- **进程检测**：检查微信是否正在运行
+
+### 🛠️ 技术特点
+- **多方案兼容**：提供主方案和备用方案，提高成功率
+- **智能坐标计算**：根据窗口大小自动计算点击位置
+- **剪贴板操作**：使用剪贴板进行文本传输
+- **热键模拟**：支持多种键盘快捷键操作
+
+## 📦 安装使用
+
+### 环境要求
+- **操作系统**：Windows 10/11
+- **Python**：3.8 及以上版本
+- **微信版本**：微信桌面版（需要提前安装并登录）
+
+### 安装依赖
 ```bash
-pip install wcauto
+pip install -r requirements.txt
 ```
 
-或者从源码安装：
+依赖包说明：
+- `pyautogui>=0.9.53`：鼠标键盘自动化控制
+- `pyperclip>=1.8.2`：剪贴板操作
+- `uiautomation>=2.0.15`：Windows UI 自动化
+- `psutil>=5.8.0`：进程管理
 
-```bash
-git clone https://github.com/yourusername/wcauto.git
-cd wcauto
-pip install -e .
-```
-
-## 快速开始
+## 💡 快速开始
 
 ### 基本用法
-
 ```python
-from wcauto import WeChatBot
+from wcauto import WeChat
 
-# 创建机器人实例
-bot = WeChatBot()
+# 创建微信自动化实例
+wx = WeChat()
 
-# 发送消息
-bot.send_message("文件传输助手", "你好，这是一条测试消息！")
-```
+# 发送消息给指定联系人
+result = wx.SendMsg("文件传输助手", "你好，这是一条测试消息！")
 
-### 高级配置
-
-```python
-from wcauto import WeChatBot
-
-# 创建带有自定义配置的机器人实例
-bot = WeChatBot(
-    search_delay=1.0,      # 搜索联系人时的延迟时间(秒)
-    input_delay=0.2,       # 输入文本时的延迟时间(秒)
-    send_delay=0.3,        # 发送消息时的延迟时间(秒)
-    use_send_button=True,  # 使用发送按钮而不是Enter键
-    safe_mode=False        # 关闭安全模式以提高速度
-)
-
-# 发送消息
-success = bot.send_message("联系人名称", "消息内容")
-if success:
+if result:
     print("消息发送成功！")
 else:
     print("消息发送失败！")
 ```
 
-### 批量发送
-
+### 使用示例
 ```python
-from wcauto import WeChatBot
+from wcauto import WeChat
 
-bot = WeChatBot(safe_mode=False)  # 关闭安全模式以提高批量发送速度
+# 初始化
+wx = WeChat()
 
-contacts = ["联系人1", "联系人2", "联系人3"]
-message = "这是一条批量发送的消息"
+# 检查微信是否运行
+if wx.check_wechat_running():
+    print("微信正在运行")
+else:
+    print("微信未运行，请先启动微信")
 
-for contact in contacts:
-    success = bot.send_message(contact, message)
-    if success:
-        print(f"已成功发送给 {contact}")
-    else:
-        print(f"发送给 {contact} 失败")
+# 发送消息（支持使用发送按钮）
+wx.SendMsg("好友名称", "这是一条测试消息", use_send_button=True)
 ```
 
-## API 文档
+## 🔧 API 文档
 
-### WeChatBot 类
+### WeChat 类
 
-#### 构造函数
+#### `__init__()`
+初始化微信自动化实例。
 
-```python
-WeChatBot(
-    search_delay=1.5, 
-    input_delay=0.3, 
-    send_delay=0.5,
-    use_send_button=False,
-    safe_mode=True
-)
-```
-
-**参数：**
-- `search_delay` (float): 搜索联系人时的延迟时间，默认为1.5秒
-- `input_delay` (float): 输入文本时的延迟时间，默认为0.3秒
-- `send_delay` (float): 发送消息时的延迟时间，默认为0.5秒
-- `use_send_button` (bool): 是否使用发送按钮而不是Enter键，默认为False
-- `safe_mode` (bool): 是否启用安全模式，会增加额外的延迟以确保稳定性，默认为True
-
-#### 方法
-
-##### send_message(contact_name, message, use_send_button=None)
-
-发送消息给指定联系人
+#### `SendMsg(contact_name, message, use_send_button=False)`
+向指定联系人发送消息。
 
 **参数：**
 - `contact_name` (str): 联系人名称
-- `message` (str): 消息内容
-- `use_send_button` (bool, optional): 是否使用发送按钮，如果为None则使用初始化时的设置
+- `message` (str): 要发送的消息内容
+- `use_send_button` (bool): 是否使用发送按钮（默认使用回车键）
 
-**返回：**
-- `bool`: 是否成功发送
+**返回值：**
+- `bool`: 发送成功返回 True，失败返回 False
 
-##### SendMsg(contact_name, message, use_send_button=False)
+#### `check_wechat_running()`
+检查微信进程是否正在运行。
 
-兼容性方法，功能与`send_message`相同
+**返回值：**
+- `bool`: 微信运行返回 True，否则返回 False
 
-**参数：**
-- `contact_name` (str): 联系人名称
-- `message` (str): 消息内容
-- `use_send_button` (bool): 是否使用发送按钮，默认为False
+#### `activate_wechat()`
+激活微信窗口。
 
-**返回：**
-- `bool`: 是否成功发送
+**返回值：**
+- `bool`: 激活成功返回 True，失败返回 False
 
-##### check_wechat_running()
+## 📁 项目结构
 
-检查微信是否正在运行
+```
+wcauto/
+├── wcauto/                 # 核心代码包
+│   ├── __init__.py        # 包初始化文件
+│   └── wcauto.py          # 主要实现类
+├── Application.py         # 使用示例
+├── requirements.txt        # 依赖包列表
+├── tests/                 # 测试代码
+│   ├── __init__.py
+│   └── test_wcauto.py
+├── LICENSE               # 开源许可证
+└── README.md             # 项目说明文档
+```
 
-**返回：**
-- `bool`: 微信是否正在运行
+## ⚠️ 注意事项
 
-## 注意事项
+### 重要提醒
+1. **微信版本**：仅支持微信桌面版，不支持网页版微信
+2. **窗口要求**：微信窗口需要可见，不能最小化到系统托盘
+3. **权限要求**：需要以管理员权限运行程序
+4. **兼容性**：不同微信版本可能需要调整坐标计算
+5. **使用限制**：请遵守微信使用条款，避免滥用
 
-1. **系统要求**：本库仅支持Windows系统
-2. **微信要求**：需要安装并登录微信桌面版
-3. **屏幕分辨率**：库会自动适应不同的屏幕分辨率
-4. **使用前准备**：确保微信窗口可见且未被最小化
-5. **权限要求**：可能需要管理员权限才能正常操作
+### 常见问题
 
-## 性能优化建议
+**Q: 消息发送失败怎么办？**
+A: 
+- 检查微信是否已启动并登录
+- 确认联系人名称正确
+- 尝试使用 `use_send_button=True` 参数
+- 检查程序是否以管理员权限运行
 
-1. **调整延迟参数**：根据您的系统性能和网络状况，适当调整`search_delay`、`input_delay`和`send_delay`参数
-2. **关闭安全模式**：在稳定的环境下，可以设置`safe_mode=False`以提高发送速度
-3. **批量发送**：对于批量发送任务，建议先测试少量联系人，确认无误后再进行大规模发送
+**Q: 如何提高发送成功率？**
+A:
+- 确保微信窗口可见且未被遮挡
+- 适当增加操作之间的等待时间
+- 使用最新版本的微信
 
-## 常见问题
+**Q: 支持群聊消息发送吗？**
+A: 是的，只需将群聊名称作为 `contact_name` 参数传入即可。
 
-### Q: 消息发送失败怎么办？
-A: 首先检查微信是否正常运行，然后尝试增加延迟参数或启用安全模式。如果问题仍然存在，请查看日志以获取更多信息。
+## 🤝 参与贡献
 
-### Q: 如何提高发送速度？
-A: 可以尝试减少延迟参数或关闭安全模式。但请注意，过快的速度可能导致操作失败。
+欢迎提交 Issue 和 Pull Request 来改进这个项目！
 
-### Q: 支持群聊吗？
-A: 是的，您可以将群聊名称作为联系人名称来发送消息。
+### 贡献流程
+1. Fork 本项目
+2. 创建特性分支 (`git checkout -b feature/AmazingFeature`)
+3. 提交更改 (`git commit -m 'Add some AmazingFeature'`)
+4. 推送到分支 (`git push origin feature/AmazingFeature`)
+5. 创建 Pull Request
 
-## 许可证
+## 📜 开源许可
 
-本项目采用MIT许可证。详情请参阅[LICENSE](LICENSE)文件。
+本项目采用 [MIT License](LICENSE) 开源协议。
 
-## 贡献
+```
+MIT License
 
-欢迎提交Issue和Pull Request来帮助改进本项目。
+Copyright (c) 2024 YangShengzhou03
 
-## 更新日志
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
 
-### v1.0.0 (2023-XX-XX)
-- 初始版本发布
-- 支持基本的微信消息发送功能
-- 添加错误处理和日志记录
-- 提供灵活的配置选项
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+```
+
+---
+
+<div align="center">
+  <sub>Built with ❤️ using Python and automation technologies</sub>
+</div>

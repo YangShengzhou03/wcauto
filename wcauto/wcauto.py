@@ -31,6 +31,9 @@ class WeChat:
                 return False
     
     def find_wechat_window(self):
+        if self._wechat_window_cache:
+            return self._wechat_window_cache
+            
         try:
             all_windows = []
             
@@ -51,6 +54,7 @@ class WeChat:
                 if ("微信" in window_name or "WeChat" in window_name or 
                     "WeChat" in class_name or "微信" in class_name or
                     "Chat" in class_name):
+                    self._wechat_window_cache = window
                     return window
             
             return None
@@ -67,10 +71,10 @@ class WeChat:
             
             if wechat_window.IsOffscreen:
                 windll.user32.ShowWindow(hwnd, 9)
-                time.sleep(0.5)
+                time.sleep(0.3)
             
             windll.user32.SetForegroundWindow(hwnd)
-            time.sleep(0.5)
+            time.sleep(0.3)
             
             return True
         except Exception:
@@ -93,7 +97,7 @@ class WeChat:
             input_y = max(0, min(input_y, self.screen_height - 1))
             
             pyautogui.click(input_x, input_y)
-            time.sleep(0.3)
+            time.sleep(0.2)
             return True
             
         except Exception:
@@ -108,7 +112,7 @@ class WeChat:
             input_y = max(0, min(input_y, self.screen_height - 1))
             
             pyautogui.click(center_x, input_y)
-            time.sleep(0.3)
+            time.sleep(0.2)
             return True
         except Exception:
             return False
@@ -130,7 +134,7 @@ class WeChat:
             send_y = max(0, min(send_y, self.screen_height - 1))
             
             pyautogui.click(send_x, send_y)
-            time.sleep(0.3)
+            time.sleep(0.2)
             return True
             
         except Exception:
@@ -142,30 +146,30 @@ class WeChat:
                 return False
             
             pyautogui.hotkey('ctrl', 'f')
-            time.sleep(1.5)
+            time.sleep(1.0)
             
             if not self.copy_to_clipboard(contact_name):
                 return False
-            time.sleep(0.3)
+            time.sleep(0.2)
             
             if not self.paste_text():
                 return False
-            time.sleep(0.5)
+            time.sleep(0.3)
             
             pyautogui.press('enter')
-            time.sleep(2)
+            time.sleep(1.5)
             
             if not self.click_message_input_area():
                 pyautogui.press('tab')
-                time.sleep(0.5)
+                time.sleep(0.3)
             
             if not self.copy_to_clipboard(message):
                 return False
-            time.sleep(0.3)
+            time.sleep(0.2)
             
             if not self.paste_text():
                 return False
-            time.sleep(0.5)
+            time.sleep(0.3)
             
             if use_send_button:
                 if not self.click_send_button():
@@ -186,28 +190,28 @@ class WeChat:
             pyautogui.keyDown('ctrl')
             pyautogui.press('f')
             pyautogui.keyUp('ctrl')
-            time.sleep(1.5)
+            time.sleep(1.0)
             
             pyperclip.copy(contact_name)
-            time.sleep(0.3)
+            time.sleep(0.2)
             
             pyautogui.keyDown('ctrl')
             pyautogui.press('v')
             pyautogui.keyUp('ctrl')
-            time.sleep(0.5)
+            time.sleep(0.3)
             
             pyautogui.press('enter')
-            time.sleep(2)
+            time.sleep(1.5)
             
             self.click_message_input_area()
             
             pyperclip.copy(message)
-            time.sleep(0.3)
+            time.sleep(0.2)
             
             pyautogui.keyDown('ctrl')
             pyautogui.press('v')
             pyautogui.keyUp('ctrl')
-            time.sleep(0.5)
+            time.sleep(0.3)
             
             if use_send_button:
                 if not self.click_send_button():
