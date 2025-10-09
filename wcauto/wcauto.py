@@ -80,10 +80,10 @@ class WeChat:
             
             if wechat_window.IsOffscreen:
                 windll.user32.ShowWindow(hwnd, 9)
-                time.sleep(0.3)
+                time.sleep(0.1)
             
             windll.user32.SetForegroundWindow(hwnd)
-            time.sleep(0.3)
+            time.sleep(0.1)
             
             return True
         except Exception as e:
@@ -106,7 +106,7 @@ class WeChat:
             input_x, input_y = self._get_safe_coordinates(rect.right - 200, rect.bottom - 80)
             
             pyautogui.click(input_x, input_y)
-            time.sleep(0.2)
+            time.sleep(0.05)
             return True
             
         except Exception as e:
@@ -118,7 +118,7 @@ class WeChat:
             center_x, input_y = self._get_safe_coordinates(self.screen_width // 2, self.screen_height - 200)
             
             pyautogui.click(center_x, input_y)
-            time.sleep(0.2)
+            time.sleep(0.05)
             return True
         except Exception as e:
             logger.error(f"备用点击消息输入区域方法失败: {e}")
@@ -137,7 +137,7 @@ class WeChat:
             send_x, send_y = self._get_safe_coordinates(rect.right - 100, rect.bottom - 50)
             
             pyautogui.click(send_x, send_y)
-            time.sleep(0.2)
+            time.sleep(0.05)
             return True
             
         except Exception as e:
@@ -146,38 +146,38 @@ class WeChat:
     
     def _search_contact(self, contact_name):
         pyautogui.hotkey('ctrl', 'f')
-        time.sleep(1.0)
+        time.sleep(0.2)
         
         if not self.copy_to_clipboard(contact_name):
             logger.error("无法复制联系人名称到剪贴板")
             return False
-        time.sleep(0.2)
+        time.sleep(0.05)
         
         if not self.paste_text():
             logger.error("无法粘贴联系人名称")
             return False
-        time.sleep(0.3)
+        time.sleep(0.1)
         
         pyautogui.press('enter')
-        time.sleep(1.5)
+        time.sleep(0.2)
         return True
     
     def _prepare_message_area(self):
         if not self.click_message_input_area():
             pyautogui.press('tab')
-            time.sleep(0.3)
+            time.sleep(0.1)
         return True
     
     def _send_message_content(self, message, use_send_button=False):
         if not self.copy_to_clipboard(message):
             logger.error("无法复制消息到剪贴板")
             return False
-        time.sleep(0.2)
+        time.sleep(0.05)
         
         if not self.paste_text():
             logger.error("无法粘贴消息")
             return False
-        time.sleep(0.3)
+        time.sleep(0.1)
         
         if use_send_button:
             if not self.click_send_button():
@@ -217,28 +217,28 @@ class WeChat:
                 pyautogui.keyDown('ctrl')
                 pyautogui.press('f')
                 pyautogui.keyUp('ctrl')
-                time.sleep(1.0)
+                time.sleep(0.2)
                 
                 pyperclip.copy(who)
-                time.sleep(0.2)
+                time.sleep(0.05)
                 
                 pyautogui.keyDown('ctrl')
                 pyautogui.press('v')
                 pyautogui.keyUp('ctrl')
-                time.sleep(0.3)
+                time.sleep(0.1)
                 
                 pyautogui.press('enter')
-                time.sleep(1.5)
+                time.sleep(0.2)
             
             self.click_message_input_area()
             
             pyperclip.copy(message)
-            time.sleep(0.2)
+            time.sleep(0.05)
             
             pyautogui.keyDown('ctrl')
             pyautogui.press('v')
             pyautogui.keyUp('ctrl')
-            time.sleep(0.3)
+            time.sleep(0.1)
             
             if use_send_button:
                 if not self.click_send_button():
@@ -284,7 +284,7 @@ class WeChat:
             if not self.paste_text():
                 logger.error("无法粘贴消息")
                 return False
-            time.sleep(0.3)
+            time.sleep(0.1)
             
             pyautogui.press('enter')
             
