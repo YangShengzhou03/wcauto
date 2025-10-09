@@ -27,15 +27,9 @@ class WeChat:
         try:
             pyautogui.hotkey('ctrl', 'v')
             return True
-        except Exception:
-            try:
-                pyautogui.keyDown('ctrl')
-                pyautogui.press('v')
-                pyautogui.keyUp('ctrl')
-                return True
-            except Exception as e:
-                logger.error(f"粘贴文本失败: {e}")
-                return False
+        except Exception as e:
+            logger.error(f"粘贴文本失败: {e}")
+            return False
     
     def find_wechat_window(self):
         if self._wechat_window_cache:
@@ -110,19 +104,10 @@ class WeChat:
             return True
             
         except Exception as e:
-            logger.warning(f"点击消息输入区域失败，尝试备用方法: {e}")
-            return self._click_input_area_fallback()
-    
-    def _click_input_area_fallback(self):
-        try:
-            center_x, input_y = self._get_safe_coordinates(self.screen_width // 2, self.screen_height - 200)
-            
-            pyautogui.click(center_x, input_y)
-            time.sleep(0.05)
-            return True
-        except Exception as e:
-            logger.error(f"备用点击消息输入区域方法失败: {e}")
+            logger.error(f"点击消息输入区域失败: {e}")
             return False
+    
+    
     
     def click_send_button(self):
         try:
@@ -164,8 +149,7 @@ class WeChat:
     
     def _prepare_message_area(self):
         if not self.click_message_input_area():
-            pyautogui.press('tab')
-            time.sleep(0.1)
+            return False
         return True
     
     def _send_message_content(self, message, use_send_button=False):
@@ -206,51 +190,9 @@ class WeChat:
             
         except Exception as e:
             logger.error(f"发送消息失败: {e}")
-            return self._send_message_backup(message, who, use_send_button)
-    
-    def _send_message_backup(self, message, who=None, use_send_button=False):
-        try:
-            if not self.activate_wechat():
-                return False
-            
-            if who:
-                pyautogui.keyDown('ctrl')
-                pyautogui.press('f')
-                pyautogui.keyUp('ctrl')
-                time.sleep(0.2)
-                
-                pyperclip.copy(who)
-                time.sleep(0.05)
-                
-                pyautogui.keyDown('ctrl')
-                pyautogui.press('v')
-                pyautogui.keyUp('ctrl')
-                time.sleep(0.1)
-                
-                pyautogui.press('enter')
-                time.sleep(0.2)
-            
-            self.click_message_input_area()
-            
-            pyperclip.copy(message)
-            time.sleep(0.05)
-            
-            pyautogui.keyDown('ctrl')
-            pyautogui.press('v')
-            pyautogui.keyUp('ctrl')
-            time.sleep(0.1)
-            
-            if use_send_button:
-                if not self.click_send_button():
-                    pyautogui.press('enter')
-            else:
-                pyautogui.press('enter')
-            
-            return True
-            
-        except Exception as e:
-            logger.error(f"备用发送消息方法失败: {e}")
             return False
+    
+    
     
     def check_wechat_running(self):
         try:
