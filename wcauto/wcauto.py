@@ -230,5 +230,5 @@ class WeChat:
             return False
 
 if __name__ == "__main__":
-    bot = WeChatBot()
-    bot.SendMsg("文件传输助手", "测试成功了！")
+    wx = WeChat()
+    wx.SendMsg("文件传输助手", "测试成功了！")
