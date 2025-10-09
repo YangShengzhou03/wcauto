@@ -5,7 +5,7 @@ import uiautomation as auto
 from ctypes import windll
 import psutil
 
-class WeChatBot:
+class WeChat:
     def __init__(self):
         self.screen_width, self.screen_height = pyautogui.size()
         self._wechat_window_cache = None
