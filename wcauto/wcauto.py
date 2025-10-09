@@ -68,7 +68,14 @@ class WeChat:
             wechat_window = self.find_wechat_window()
             if not wechat_window:
                 logger.warning("未找到微信窗口")
-                return False
+                logger.info("尝试使用Ctrl+Alt+W快捷键唤醒微信...")
+                pyautogui.hotkey('ctrl', 'alt', 'w')
+                time.sleep(1)
+                
+                wechat_window = self.find_wechat_window()
+                if not wechat_window:
+                    logger.error("即使使用快捷键后，仍未找到微信窗口")
+                    return False
             
             hwnd = wechat_window.NativeWindowHandle
             
@@ -76,9 +83,18 @@ class WeChat:
                 windll.user32.ShowWindow(hwnd, 9)
                 time.sleep(0.1)
             
-            windll.user32.SetForegroundWindow(hwnd)
-            time.sleep(0.1)
+            activation_result = windll.user32.SetForegroundWindow(hwnd)
+            if not activation_result:
+                logger.warning("无法激活微信窗口，尝试使用快捷键...")
+                pyautogui.hotkey('ctrl', 'alt', 'w')
+                time.sleep(1)
+                
+                activation_result = windll.user32.SetForegroundWindow(hwnd)
+                if not activation_result:
+                    logger.error("即使使用快捷键后，仍无法激活微信窗口")
+                    return False
             
+            time.sleep(0.1)
             return True
         except Exception as e:
             logger.error(f"激活微信窗口失败: {e}")
@@ -106,8 +122,6 @@ class WeChat:
         except Exception as e:
             logger.error(f"点击消息输入区域失败: {e}")
             return False
-    
-    
     
     def click_send_button(self):
         try:
@@ -191,8 +205,6 @@ class WeChat:
         except Exception as e:
             logger.error(f"发送消息失败: {e}")
             return False
-    
-    
     
     def check_wechat_running(self):
         try:
