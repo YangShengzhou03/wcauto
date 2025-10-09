@@ -284,117 +284,139 @@ class WeChat:
             return False
 
     def SendFiles(self, filepath, who=None):
-        """
-        发送文件到指定联系人
-        
-        Args:
-            filepath: 文件路径，可以是字符串或列表/元组/集合
-            who: 联系人名称
-        
-        Returns:
-            bool: 发送成功返回True，失败返回False
-        """
-        filelist = []
-        
-        # 处理文件路径参数
-        if isinstance(filepath, str):
-            if not os.path.exists(filepath):
-                logger.error(f'未找到文件：{filepath}，无法成功发送')
+        try:
+            if not self.activate_wechat():
+                logger.error("无法激活微信窗口")
                 return False
-            else:
-                filelist.append(os.path.realpath(filepath))
-        elif isinstance(filepath, (list, tuple, set)):
-            for i in filepath:
-                if os.path.exists(i):
-                    filelist.append(i)
-                else:
-                    logger.warning(f'未找到文件：{i}')
-        else:
-            logger.error(f'filepath参数格式错误：{type(filepath)}，应为str、list、tuple、set格式')
-            return False
-        
-        if not filelist:
-            logger.error('未找到任何有效文件')
-            return False
-        
-        # 激活微信窗口
-        if not self.activate_wechat():
-            logger.error('无法激活微信窗口')
-            return False
-        
-        # 搜索联系人
-        if who:
-            pyautogui.hotkey('ctrl', 'f')
-            time.sleep(1.0)
             
-            if not self.copy_to_clipboard(who):
-                logger.error('无法复制联系人名称到剪贴板')
-                return False
-            time.sleep(0.2)
+            # 如果指定了联系人，则搜索联系人
+            if who:
+                pyautogui.hotkey('ctrl', 'f')
+                time.sleep(1.0)
+                
+                if not self.copy_to_clipboard(who):
+                    logger.error("无法复制联系人名称到剪贴板")
+                    return False
+                time.sleep(0.2)
+                
+                if not self.paste_text():
+                    logger.error("无法粘贴联系人名称")
+                    return False
+                time.sleep(0.3)
+                
+                pyautogui.press('enter')
+                time.sleep(1.5)
+            
+            # 点击消息输入区域
+            if not self.click_message_input_area():
+                pyautogui.press('tab')
+                time.sleep(0.3)
+            
+            # 输入消息
+            # 确保文件或文件夹存在
+            if not os.path.exists(filepath):
+                raise FileNotFoundError(f"路径不存在: {filepath}")
+
+            # 转换为绝对路径
+            filepath = os.path.abspath(filepath)
+            
+            # 调用Windows API将文件/文件夹复制到剪贴板
+            self._set_clipboard_files([filepath])
             
             if not self.paste_text():
-                logger.error('无法粘贴联系人名称')
+                logger.error("无法粘贴消息")
                 return False
             time.sleep(0.3)
             
+            # 发送消息
             pyautogui.press('enter')
-            time.sleep(1.5)
+            
+            logger.info(f"成功发送文件到{'联系人' if who else '当前聊天'}")
+            return True
+        except Exception as e:
+            logger.error(f"发送文件失败: {e}")
+            return False
+
+
+    def _set_clipboard_files(self, file_paths):
+        """使用Windows API将文件列表设置到剪贴板"""
+        import ctypes
+        from ctypes import wintypes
         
-        # 点击消息输入区域
-        if not self.click_message_input_area():
-            pyautogui.press('tab')
-            time.sleep(0.3)
+        # 定义Windows常量和结构
+        CF_HDROP = 15
+        GMEM_MOVEABLE = 0x0002
+        GMEM_ZEROINIT = 0x0040
+        GHND = GMEM_MOVEABLE | GMEM_ZEROINIT
         
-        # 发送每个文件
-        success_count = 0
-        for file_path in filelist:
+        class DROPFILES(ctypes.Structure):
+            _fields_ = [
+                ("pFiles", wintypes.DWORD),
+                ("pt", wintypes.POINT),
+                ("fNC", wintypes.BOOL),
+                ("fWide", wintypes.BOOL)
+            ]
+        
+        # 获取Windows API函数
+        kernel32 = ctypes.windll.kernel32
+        user32 = ctypes.windll.user32
+        
+        # 准备文件路径数据
+        data = ""
+        for path in file_paths:
+            # 使用Unicode宽字符格式，每个路径后跟两个空字符
+            data += path + "\0"
+        data += "\0"  # 最终以两个空字符结束
+        
+        # 转换为UTF-16 LE编码（Windows宽字符格式）
+        data_wide = data.encode('utf-16le')
+        
+        # 计算总内存大小
+        df_size = ctypes.sizeof(DROPFILES)
+        total_size = df_size + len(data_wide)
+        
+        # 分配全局内存
+        hGlobal = kernel32.GlobalAlloc(GHND, total_size)
+        if not hGlobal:
+            raise MemoryError("无法分配全局内存")
+        
+        try:
+            # 锁定内存并获取指针
+            pGlobal = kernel32.GlobalLock(hGlobal)
+            if not pGlobal:
+                raise MemoryError("无法锁定全局内存")
+            
             try:
-                # 使用Windows API复制文件到剪贴板
-                import win32clipboard
-                import win32con
+                # 初始化DROPFILES结构
+                df = DROPFILES()
+                df.pFiles = df_size  # 文件列表在结构体后的偏移量
+                df.fWide = True  # 使用Unicode
                 
-                # 打开剪贴板
-                win32clipboard.OpenClipboard()
-                win32clipboard.EmptyClipboard()
+                # 复制结构体到内存
+                ctypes.memmove(pGlobal, ctypes.byref(df), df_size)
                 
-                # 设置文件路径到剪贴板
-                file_paths = [file_path]
+                # 复制文件路径数据到内存
+                data_ptr = ctypes.cast(pGlobal + df_size, ctypes.c_void_p)
+                ctypes.memmove(data_ptr, data_wide, len(data_wide))
                 
-                # 构建文件列表格式
-                file_list = "\0".join(file_paths) + "\0\0"
+            finally:
+                kernel32.GlobalUnlock(hGlobal)
+            
+            # 打开剪贴板并设置数据
+            if user32.OpenClipboard(0):
+                user32.EmptyClipboard()
+                result = user32.SetClipboardData(CF_HDROP, hGlobal)
+                user32.CloseClipboard()
                 
-                # 设置CF_HDROP格式（文件拖放格式）
-                win32clipboard.SetClipboardData(win32con.CF_HDROP, file_list.encode('utf-16le'))
+                if not result:
+                    raise RuntimeError("无法设置剪贴板数据")
+            else:
+                raise RuntimeError("无法打开剪贴板")
                 
-                # 关闭剪贴板
-                win32clipboard.CloseClipboard()
-                
-                time.sleep(0.5)
-                
-                # 粘贴文件
-                pyautogui.hotkey('ctrl', 'v')
-                time.sleep(1.0)
-                
-                # 发送文件
-                pyautogui.press('enter')
-                time.sleep(1.0)
-                
-                success_count += 1
-                logger.info(f'成功发送文件：{os.path.basename(file_path)}')
-                
-            except Exception as e:
-                logger.error(f'发送文件失败：{file_path}, 错误：{e}')
-                # 尝试备用方法：使用文件路径作为文本发送
-                try:
-                    logger.warning(f'尝试备用方法发送文件：{file_path}')
-                    if self.SendMsg(file_path, who):
-                        success_count += 1
-                        logger.info(f'备用方法成功发送文件：{os.path.basename(file_path)}')
-                except Exception as e2:
-                    logger.error(f'备用方法也失败：{e2}')
-        
-        logger.info(f'成功发送 {success_count}/{len(filelist)} 个文件')
-        return success_count > 0
+        except Exception:
+            kernel32.GlobalFree(hGlobal)
+            raise
+
 
 if __name__ == "__main__":
     wx = WeChat()
