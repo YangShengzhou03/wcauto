@@ -90,6 +90,9 @@ class WeChat:
             logger.error(f"激活微信窗口失败: {e}")
             return False
     
+    def _get_safe_coordinates(self, x, y):
+        return max(0, min(x, self.screen_width - 1)), max(0, min(y, self.screen_height - 1))
+    
     def click_message_input_area(self):
         try:
             wechat_window = self.find_wechat_window()
@@ -100,11 +103,7 @@ class WeChat:
             if not rect:
                 return False
             
-            input_x = rect.right - 200
-            input_y = rect.bottom - 80
-            
-            input_x = max(0, min(input_x, self.screen_width - 1))
-            input_y = max(0, min(input_y, self.screen_height - 1))
+            input_x, input_y = self._get_safe_coordinates(rect.right - 200, rect.bottom - 80)
             
             pyautogui.click(input_x, input_y)
             time.sleep(0.2)
@@ -116,11 +115,7 @@ class WeChat:
     
     def _click_input_area_fallback(self):
         try:
-            center_x = self.screen_width // 2
-            input_y = self.screen_height - 200
-            
-            center_x = max(0, min(center_x, self.screen_width - 1))
-            input_y = max(0, min(input_y, self.screen_height - 1))
+            center_x, input_y = self._get_safe_coordinates(self.screen_width // 2, self.screen_height - 200)
             
             pyautogui.click(center_x, input_y)
             time.sleep(0.2)
@@ -139,11 +134,7 @@ class WeChat:
             if not rect:
                 return False
             
-            send_x = rect.right - 100
-            send_y = rect.bottom - 50
-            
-            send_x = max(0, min(send_x, self.screen_width - 1))
-            send_y = max(0, min(send_y, self.screen_height - 1))
+            send_x, send_y = self._get_safe_coordinates(rect.right - 100, rect.bottom - 50)
             
             pyautogui.click(send_x, send_y)
             time.sleep(0.2)
@@ -153,48 +144,62 @@ class WeChat:
             logger.error(f"点击发送按钮失败: {e}")
             return False
     
+    def _search_contact(self, contact_name):
+        pyautogui.hotkey('ctrl', 'f')
+        time.sleep(1.0)
+        
+        if not self.copy_to_clipboard(contact_name):
+            logger.error("无法复制联系人名称到剪贴板")
+            return False
+        time.sleep(0.2)
+        
+        if not self.paste_text():
+            logger.error("无法粘贴联系人名称")
+            return False
+        time.sleep(0.3)
+        
+        pyautogui.press('enter')
+        time.sleep(1.5)
+        return True
+    
+    def _prepare_message_area(self):
+        if not self.click_message_input_area():
+            pyautogui.press('tab')
+            time.sleep(0.3)
+        return True
+    
+    def _send_message_content(self, message, use_send_button=False):
+        if not self.copy_to_clipboard(message):
+            logger.error("无法复制消息到剪贴板")
+            return False
+        time.sleep(0.2)
+        
+        if not self.paste_text():
+            logger.error("无法粘贴消息")
+            return False
+        time.sleep(0.3)
+        
+        if use_send_button:
+            if not self.click_send_button():
+                pyautogui.press('enter')
+        else:
+            pyautogui.press('enter')
+        return True
+    
     def SendMsg(self, message, who=None, use_send_button=False):
         try:
             if not self.activate_wechat():
                 logger.error("无法激活微信窗口")
                 return False
             
-            if who:
-                pyautogui.hotkey('ctrl', 'f')
-                time.sleep(1.0)
-                
-                if not self.copy_to_clipboard(who):
-                    logger.error("无法复制联系人名称到剪贴板")
-                    return False
-                time.sleep(0.2)
-                
-                if not self.paste_text():
-                    logger.error("无法粘贴联系人名称")
-                    return False
-                time.sleep(0.3)
-                
-                pyautogui.press('enter')
-                time.sleep(1.5)
-            
-            if not self.click_message_input_area():
-                pyautogui.press('tab')
-                time.sleep(0.3)
-            
-            if not self.copy_to_clipboard(message):
-                logger.error("无法复制消息到剪贴板")
+            if who and not self._search_contact(who):
                 return False
-            time.sleep(0.2)
             
-            if not self.paste_text():
-                logger.error("无法粘贴消息")
+            if not self._prepare_message_area():
                 return False
-            time.sleep(0.3)
             
-            if use_send_button:
-                if not self.click_send_button():
-                    pyautogui.press('enter')
-            else:
-                pyautogui.press('enter')
+            if not self._send_message_content(message, use_send_button):
+                return False
             
             logger.info(f"成功发送消息到{'联系人' if who else '当前聊天'}")
             return True
@@ -263,26 +268,11 @@ class WeChat:
                 logger.error("无法激活微信窗口")
                 return False
             
-            if who:
-                pyautogui.hotkey('ctrl', 'f')
-                time.sleep(1.0)
-                
-                if not self.copy_to_clipboard(who):
-                    logger.error("无法复制联系人名称到剪贴板")
-                    return False
-                time.sleep(0.2)
-                
-                if not self.paste_text():
-                    logger.error("无法粘贴联系人名称")
-                    return False
-                time.sleep(0.3)
-                
-                pyautogui.press('enter')
-                time.sleep(1.5)
+            if who and not self._search_contact(who):
+                return False
             
-            if not self.click_message_input_area():
-                pyautogui.press('tab')
-                time.sleep(0.3)
+            if not self._prepare_message_area():
+                return False
             
             if not os.path.exists(filepath):
                 raise FileNotFoundError(f"路径不存在: {filepath}")
