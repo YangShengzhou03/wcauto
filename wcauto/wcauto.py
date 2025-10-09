@@ -5,6 +5,11 @@ import pyperclip
 import uiautomation as auto
 from ctypes import windll
 import psutil
+import logging
+
+# 配置日志记录
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+logger = logging.getLogger(__name__)
 
 class WeChat:
     def __init__(self):
@@ -12,13 +17,16 @@ class WeChat:
         self._wechat_window_cache = None
     
     def copy_to_clipboard(self, text):
+        """复制文本到剪贴板"""
         try:
             pyperclip.copy(text)
             return True
-        except Exception:
+        except Exception as e:
+            logger.error(f"复制到剪贴板失败: {e}")
             return False
     
     def paste_text(self):
+        """粘贴剪贴板内容"""
         try:
             pyautogui.hotkey('ctrl', 'v')
             return True
@@ -28,10 +36,12 @@ class WeChat:
                 pyautogui.press('v')
                 pyautogui.keyUp('ctrl')
                 return True
-            except Exception:
+            except Exception as e:
+                logger.error(f"粘贴文本失败: {e}")
                 return False
     
     def find_wechat_window(self):
+        """查找微信窗口"""
         if self._wechat_window_cache:
             return self._wechat_window_cache
             
@@ -59,13 +69,16 @@ class WeChat:
                     return window
             
             return None
-        except Exception:
+        except Exception as e:
+            logger.error(f"查找微信窗口失败: {e}")
             return None
     
     def activate_wechat(self):
+        """激活微信窗口"""
         try:
             wechat_window = self.find_wechat_window()
             if not wechat_window:
+                logger.warning("未找到微信窗口")
                 return False
             
             hwnd = wechat_window.NativeWindowHandle
@@ -78,10 +91,12 @@ class WeChat:
             time.sleep(0.3)
             
             return True
-        except Exception:
+        except Exception as e:
+            logger.error(f"激活微信窗口失败: {e}")
             return False
     
     def click_message_input_area(self):
+        """点击消息输入区域"""
         try:
             wechat_window = self.find_wechat_window()
             if not wechat_window:
@@ -101,10 +116,12 @@ class WeChat:
             time.sleep(0.2)
             return True
             
-        except Exception:
+        except Exception as e:
+            logger.warning(f"点击消息输入区域失败，尝试备用方法: {e}")
             return self._click_input_area_fallback()
     
     def _click_input_area_fallback(self):
+        """点击消息输入区域的备用方法"""
         try:
             center_x = self.screen_width // 2
             input_y = self.screen_height - 200
@@ -115,10 +132,12 @@ class WeChat:
             pyautogui.click(center_x, input_y)
             time.sleep(0.2)
             return True
-        except Exception:
+        except Exception as e:
+            logger.error(f"备用点击消息输入区域方法失败: {e}")
             return False
     
     def click_send_button(self):
+        """点击发送按钮"""
         try:
             wechat_window = self.find_wechat_window()
             if not wechat_window:
@@ -138,71 +157,98 @@ class WeChat:
             time.sleep(0.2)
             return True
             
-        except Exception:
+        except Exception as e:
+            logger.error(f"点击发送按钮失败: {e}")
             return False
     
-    def SendMsg(self, contact_name, message, use_send_button=False):
+    def SendMsg(self, message, contact_name=None, use_send_button=False):
+        """
+        发送消息到指定联系人
+        
+        Args:
+            message: 要发送的消息内容
+            contact_name: 联系人名称，如果为None则发送到当前聊天
+            use_send_button: 是否使用发送按钮发送，默认为False（使用Enter键）
+        
+        Returns:
+            bool: 发送成功返回True，失败返回False
+        """
         try:
             if not self.activate_wechat():
+                logger.error("无法激活微信窗口")
                 return False
             
-            pyautogui.hotkey('ctrl', 'f')
-            time.sleep(1.0)
+            # 如果指定了联系人，则搜索联系人
+            if contact_name:
+                pyautogui.hotkey('ctrl', 'f')
+                time.sleep(1.0)
+                
+                if not self.copy_to_clipboard(contact_name):
+                    logger.error("无法复制联系人名称到剪贴板")
+                    return False
+                time.sleep(0.2)
+                
+                if not self.paste_text():
+                    logger.error("无法粘贴联系人名称")
+                    return False
+                time.sleep(0.3)
+                
+                pyautogui.press('enter')
+                time.sleep(1.5)
             
-            if not self.copy_to_clipboard(contact_name):
-                return False
-            time.sleep(0.2)
-            
-            if not self.paste_text():
-                return False
-            time.sleep(0.3)
-            
-            pyautogui.press('enter')
-            time.sleep(1.5)
-            
+            # 点击消息输入区域
             if not self.click_message_input_area():
                 pyautogui.press('tab')
                 time.sleep(0.3)
             
+            # 输入消息
             if not self.copy_to_clipboard(message):
+                logger.error("无法复制消息到剪贴板")
                 return False
             time.sleep(0.2)
             
             if not self.paste_text():
+                logger.error("无法粘贴消息")
                 return False
             time.sleep(0.3)
             
+            # 发送消息
             if use_send_button:
                 if not self.click_send_button():
                     pyautogui.press('enter')
             else:
                 pyautogui.press('enter')
             
+            logger.info(f"成功发送消息到{'联系人' if contact_name else '当前聊天'}")
             return True
             
-        except Exception:
-            return self._send_message_backup(contact_name, message, use_send_button)
+        except Exception as e:
+            logger.error(f"发送消息失败: {e}")
+            return self._send_message_backup(message, contact_name, use_send_button)
     
-    def _send_message_backup(self, contact_name, message, use_send_button=False):
+    def _send_message_backup(self, message, contact_name=None, use_send_button=False):
+        """发送消息的备用方法"""
         try:
             if not self.activate_wechat():
                 return False
             
-            pyautogui.keyDown('ctrl')
-            pyautogui.press('f')
-            pyautogui.keyUp('ctrl')
-            time.sleep(1.0)
-            
-            pyperclip.copy(contact_name)
-            time.sleep(0.2)
-            
-            pyautogui.keyDown('ctrl')
-            pyautogui.press('v')
-            pyautogui.keyUp('ctrl')
-            time.sleep(0.3)
-            
-            pyautogui.press('enter')
-            time.sleep(1.5)
+            # 如果指定了联系人，则搜索联系人
+            if contact_name:
+                pyautogui.keyDown('ctrl')
+                pyautogui.press('f')
+                pyautogui.keyUp('ctrl')
+                time.sleep(1.0)
+                
+                pyperclip.copy(contact_name)
+                time.sleep(0.2)
+                
+                pyautogui.keyDown('ctrl')
+                pyautogui.press('v')
+                pyautogui.keyUp('ctrl')
+                time.sleep(0.3)
+                
+                pyautogui.press('enter')
+                time.sleep(1.5)
             
             self.click_message_input_area()
             
@@ -222,16 +268,19 @@ class WeChat:
             
             return True
             
-        except Exception:
+        except Exception as e:
+            logger.error(f"备用发送消息方法失败: {e}")
             return False
     
     def check_wechat_running(self):
+        """检查微信是否正在运行"""
         try:
             for process in psutil.process_iter(['name']):
                 if process.info['name'] and ('WeChat' in process.info['name'] or '微信' in process.info['name']):
                     return True
             return False
-        except Exception:
+        except Exception as e:
+            logger.error(f"检查微信运行状态失败: {e}")
             return False
 
     def SendFiles(self, filepath, who=None):
@@ -241,7 +290,6 @@ class WeChat:
         Args:
             filepath: 文件路径，可以是字符串或列表/元组/集合
             who: 联系人名称
-            exact: 是否精确匹配联系人名称（暂未实现）
         
         Returns:
             bool: 发送成功返回True，失败返回False
@@ -251,7 +299,7 @@ class WeChat:
         # 处理文件路径参数
         if isinstance(filepath, str):
             if not os.path.exists(filepath):
-                print(f'未找到文件：{filepath}，无法成功发送')
+                logger.error(f'未找到文件：{filepath}，无法成功发送')
                 return False
             else:
                 filelist.append(os.path.realpath(filepath))
@@ -260,32 +308,32 @@ class WeChat:
                 if os.path.exists(i):
                     filelist.append(i)
                 else:
-                    print(f'未找到文件：{i}')
+                    logger.warning(f'未找到文件：{i}')
         else:
-            print(f'filepath参数格式错误：{type(filepath)}，应为str、list、tuple、set格式')
+            logger.error(f'filepath参数格式错误：{type(filepath)}，应为str、list、tuple、set格式')
             return False
         
         if not filelist:
-            print('未找到任何有效文件')
+            logger.error('未找到任何有效文件')
             return False
         
         # 激活微信窗口
         if not self.activate_wechat():
-            print('无法激活微信窗口')
+            logger.error('无法激活微信窗口')
             return False
         
         # 搜索联系人
-        pyautogui.hotkey('ctrl', 'f')
-        time.sleep(1.0)
-        
         if who:
+            pyautogui.hotkey('ctrl', 'f')
+            time.sleep(1.0)
+            
             if not self.copy_to_clipboard(who):
-                print('无法复制联系人名称到剪贴板')
+                logger.error('无法复制联系人名称到剪贴板')
                 return False
             time.sleep(0.2)
             
             if not self.paste_text():
-                print('无法粘贴联系人名称')
+                logger.error('无法粘贴联系人名称')
                 return False
             time.sleep(0.3)
             
@@ -332,22 +380,22 @@ class WeChat:
                 time.sleep(1.0)
                 
                 success_count += 1
-                print(f'成功发送文件：{os.path.basename(file_path)}')
+                logger.info(f'成功发送文件：{os.path.basename(file_path)}')
                 
             except Exception as e:
-                print(f'发送文件失败：{file_path}, 错误：{e}')
+                logger.error(f'发送文件失败：{file_path}, 错误：{e}')
                 # 尝试备用方法：使用文件路径作为文本发送
                 try:
-                    print(f'尝试备用方法发送文件：{file_path}')
-                    if self.SendMsg(who, file_path):
+                    logger.warning(f'尝试备用方法发送文件：{file_path}')
+                    if self.SendMsg(file_path, who):
                         success_count += 1
-                        print(f'备用方法成功发送文件：{os.path.basename(file_path)}')
+                        logger.info(f'备用方法成功发送文件：{os.path.basename(file_path)}')
                 except Exception as e2:
-                    print(f'备用方法也失败：{e2}')
+                    logger.error(f'备用方法也失败：{e2}')
         
-        print(f'成功发送 {success_count}/{len(filelist)} 个文件')
+        logger.info(f'成功发送 {success_count}/{len(filelist)} 个文件')
         return success_count > 0
 
 if __name__ == "__main__":
     wx = WeChat()
-    wx.SendMsg("文件传输助手", "测试成功了！")
+    wx.SendMsg("测试成功了！", "文件传输助手")
