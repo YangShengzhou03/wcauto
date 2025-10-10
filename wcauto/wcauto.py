@@ -1,10 +1,13 @@
-import time
 import os
+import time
+from ctypes import windll
+
+import psutil
 import pyautogui
 import pyperclip
 import uiautomation as auto
-from ctypes import windll
-import psutil
+import win32con
+import win32gui
 
 from wcauto.WxResponse import WxResponse
 
@@ -92,6 +95,18 @@ class WeChat4:
         except Exception as e:
             raise RuntimeError(f"激活微信窗口失败: {e}")
 
+    def find_chrome_window_and_close(self) -> bool:
+        def find_window_callback(hwnd, _):
+            if (win32gui.IsWindowVisible(hwnd) and
+                    win32gui.GetClassName(hwnd) == "Chrome_WidgetWin_0" and
+                    win32gui.GetWindowText(hwnd) == "微信"):
+                print("有符合条件的窗口，需要关闭")
+                win32gui.PostMessage(hwnd, win32con.WM_CLOSE, 0, 0)
+                return False
+            return True
+
+        return not win32gui.EnumWindows(find_window_callback, None)
+
     def _get_safe_coordinates(self, x: int, y: int) -> tuple[int, int]:
         return max(0, min(x, self.screen_width - 1)), max(0, min(y, self.screen_height - 1))
 
@@ -145,6 +160,9 @@ class WeChat4:
             if not self.paste_text():
                 raise RuntimeError("无法粘贴联系人名称")
             time.sleep(0.3)
+
+            if self.find_chrome_window_and_close():
+                raise RuntimeError(f"未找到备注为 {contact_name} 的联系人")
 
             pyautogui.press('enter')
             time.sleep(0.2)
