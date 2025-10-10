@@ -97,16 +97,19 @@ class WeChat4:
 
     def find_chrome_window_and_close(self) -> bool:
         # TODO 关闭了就是True，没窗口未关闭是False
+        Flags = False
         def find_window_callback(hwnd, _):
+            nonlocal Flags
             if (win32gui.IsWindowVisible(hwnd) and
                     win32gui.GetClassName(hwnd) == "Chrome_WidgetWin_0" and
                     win32gui.GetWindowText(hwnd) == "微信"):
                 print("有符合条件的窗口，需要关闭")
                 win32gui.PostMessage(hwnd, win32con.WM_CLOSE, 0, 0)
+                Flags = True
                 return False
             return True
-
-        return not win32gui.EnumWindows(find_window_callback, None)
+        win32gui.EnumWindows(find_window_callback, None)
+        return Flags
 
     def _get_safe_coordinates(self, x: int, y: int) -> tuple[int, int]:
         return max(0, min(x, self.screen_width - 1)), max(0, min(y, self.screen_height - 1))
@@ -390,6 +393,6 @@ class WeChat4:
 
 
 if __name__ == "__main__":
-    wx = WeChat4()
-    result = wx.SendMsg("测试成功了！", "文件传输助手")
-    print(f"发送结果: {result}")
+    print("你好")
+    # wx = WeChat4()
+    # print(wx.find_chrome_window_and_close())
