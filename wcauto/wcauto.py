@@ -104,7 +104,6 @@ class WeChat4:
                 win32gui.PostMessage(hwnd, win32con.WM_CLOSE, 0, 0)
                 return False
             return True
-
         return not win32gui.EnumWindows(find_window_callback, None)
 
     def _get_safe_coordinates(self, x: int, y: int) -> tuple[int, int]:
@@ -159,13 +158,13 @@ class WeChat4:
 
             if not self.paste_text():
                 raise RuntimeError("无法粘贴联系人名称")
-            time.sleep(0.3)
-
-            if self.find_chrome_window_and_close():
-                raise RuntimeError(f"未找到备注为 {contact_name} 的联系人")
+            time.sleep(0.5)
 
             pyautogui.press('enter')
             time.sleep(0.2)
+
+            if self.find_chrome_window_and_close():
+                raise RuntimeError(f"未找到备注为 {contact_name} 的联系人")
             return True
         except Exception as e:
             raise RuntimeError(f"搜索联系人失败: {e}")
