@@ -144,7 +144,7 @@ class WeChat4:
 
             if not self.paste_text():
                 raise RuntimeError("无法粘贴联系人名称")
-            time.sleep(0.5)
+            time.sleep(0.3)
 
             pyautogui.press('enter')
             time.sleep(0.2)
