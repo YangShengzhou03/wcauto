@@ -96,6 +96,7 @@ class WeChat4:
             raise RuntimeError(f"激活微信窗口失败: {e}")
 
     def find_chrome_window_and_close(self) -> bool:
+        # TODO 关闭了就是True，没窗口未关闭是False
         def find_window_callback(hwnd, _):
             if (win32gui.IsWindowVisible(hwnd) and
                     win32gui.GetClassName(hwnd) == "Chrome_WidgetWin_0" and
@@ -104,6 +105,7 @@ class WeChat4:
                 win32gui.PostMessage(hwnd, win32con.WM_CLOSE, 0, 0)
                 return False
             return True
+
         return not win32gui.EnumWindows(find_window_callback, None)
 
     def _get_safe_coordinates(self, x: int, y: int) -> tuple[int, int]:
