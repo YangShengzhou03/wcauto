@@ -96,14 +96,12 @@ class WeChat4:
             raise RuntimeError(f"激活微信窗口失败: {e}")
 
     def find_chrome_window_and_close(self) -> bool:
-        # TODO 关闭了就是True，没窗口未关闭是False
         Flags = False
         def find_window_callback(hwnd, _):
             nonlocal Flags
             if (win32gui.IsWindowVisible(hwnd) and
                     win32gui.GetClassName(hwnd) == "Chrome_WidgetWin_0" and
                     win32gui.GetWindowText(hwnd) == "微信"):
-                print("有符合条件的窗口，需要关闭")
                 win32gui.PostMessage(hwnd, win32con.WM_CLOSE, 0, 0)
                 Flags = True
                 return False
@@ -166,7 +164,7 @@ class WeChat4:
             time.sleep(0.5)
 
             pyautogui.press('enter')
-            time.sleep(0.2)
+            time.sleep(1.0)
 
             if self.find_chrome_window_and_close():
                 raise RuntimeError(f"未找到备注为 {contact_name} 的联系人")
@@ -205,7 +203,6 @@ class WeChat4:
                     message="无法激活微信窗口",
                     data={"operation": "activate_wechat", "target": who or "当前聊天"}
                 )
-
             if who and not self._search_contact(who):
                 return WxResponse.failure(
                     message="搜索联系人失败",
@@ -393,6 +390,6 @@ class WeChat4:
 
 
 if __name__ == "__main__":
-    print("你好")
-    # wx = WeChat4()
-    # print(wx.find_chrome_window_and_close())
+    wx = WeChat4()
+    result = wx.SendMsg("测试成功了！", "文件传输助手")
+    print(f"发送结果: {result}")
