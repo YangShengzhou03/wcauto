@@ -1,3 +1,9 @@
+"""
+微信桌面版自动化操作库
+
+基于 Python 的微信桌面版自动化操作库，支持消息发送、文件传输、窗口控制等功能。
+"""
+
 import os
 import time
 from ctypes import windll
@@ -9,31 +15,40 @@ import uiautomation as auto
 import win32con
 import win32gui
 
-from wcauto.WxResponse import WxResponse
+from wcauto.wx_response import WxResponse
 
 
-class WeChat4:
+class WeChat:
+    """
+    微信自动化操作类
+    
+    提供微信桌面版的自动化操作功能，包括消息发送、文件传输、窗口控制等。
+    """
     def __init__(self) -> None:
+        """初始化微信自动化实例。"""
         self.screen_width, self.screen_height = pyautogui.size()
         self._wechat_window_cache = None
         if not self.activate_wechat():
             raise RuntimeError("微信未启动")
 
     def copy_to_clipboard(self, text: str) -> bool:
+        """复制文本到剪贴板。"""
         try:
             pyperclip.copy(text)
             return True
         except Exception as e:
-            raise RuntimeError(f"复制到剪贴板失败: {e}")
+            raise RuntimeError(f"复制到剪贴板失败: {e}") from e
 
     def paste_text(self) -> bool:
+        """从剪贴板粘贴文本。"""
         try:
             pyautogui.hotkey('ctrl', 'v')
             return True
         except Exception as e:
-            raise RuntimeError(f"粘贴文本失败: {e}")
+            raise RuntimeError(f"粘贴文本失败: {e}") from e
 
     def find_wechat_window(self) -> auto.WindowControl | None:
+        """查找微信窗口。"""
         if self._wechat_window_cache:
             return self._wechat_window_cache
 
@@ -41,6 +56,7 @@ class WeChat4:
             all_windows = []
 
             def collect_windows(control, depth=0):
+                """递归收集所有窗口。"""
                 if depth > 10:
                     return
                 if control.ControlTypeName == 'WindowControl':
@@ -62,9 +78,10 @@ class WeChat4:
 
             return None
         except Exception as e:
-            raise RuntimeError(f"查找微信窗口失败: {e}")
+            raise RuntimeError(f"查找微信窗口失败: {e}") from e
 
     def activate_wechat(self) -> bool:
+        """激活微信窗口。"""
         try:
             wechat_window = self.find_wechat_window()
             if not wechat_window:
@@ -129,26 +146,29 @@ class WeChat4:
             time.sleep(0.5)
             return True
         except Exception as e:
-            raise RuntimeError(f"激活微信窗口失败: {e}")
+            raise RuntimeError(f"激活微信窗口失败: {e}") from e
 
     def find_chrome_window_and_close(self) -> bool:
-        Flags = False
+        """查找并关闭Chrome窗口。"""
+        flags = False
         def find_window_callback(hwnd, _):
-            nonlocal Flags
+            nonlocal flags
             if (win32gui.IsWindowVisible(hwnd) and
                     win32gui.GetClassName(hwnd) == "Chrome_WidgetWin_0" and
                     win32gui.GetWindowText(hwnd) == "微信"):
                 win32gui.PostMessage(hwnd, win32con.WM_CLOSE, 0, 0)
-                Flags = True
+                flags = True
                 return False
             return True
         win32gui.EnumWindows(find_window_callback, None)
-        return Flags
+        return flags
 
     def _get_safe_coordinates(self, x: int, y: int) -> tuple[int, int]:
+        """获取安全的屏幕坐标。"""
         return max(0, min(x, self.screen_width - 1)), max(0, min(y, self.screen_height - 1))
 
     def click_message_input_area(self) -> bool:
+        """点击消息输入区域。"""
         try:
             wechat_window = self.find_wechat_window()
             if not wechat_window:
@@ -165,9 +185,10 @@ class WeChat4:
             return True
 
         except Exception as e:
-            raise RuntimeError(f"点击消息输入区域失败: {e}")
+            raise RuntimeError(f"点击消息输入区域失败: {e}") from e
 
     def click_send_button(self) -> bool:
+        """点击发送按钮。"""
         try:
             wechat_window = self.find_wechat_window()
             if not wechat_window:
@@ -184,9 +205,10 @@ class WeChat4:
             return True
 
         except Exception as e:
-            raise RuntimeError(f"点击发送按钮失败: {e}")
+            raise RuntimeError(f"点击发送按钮失败: {e}") from e
 
     def _search_contact(self, contact_name: str) -> bool:
+        """搜索联系人。"""
         try:
             # 在搜索前再次验证微信窗口状态
             wechat_window = self.find_wechat_window()
@@ -232,14 +254,16 @@ class WeChat4:
                 raise RuntimeError(f"未找到备注为 {contact_name} 的联系人")
             return True
         except Exception as e:
-            raise RuntimeError(f"搜索联系人失败: {e}")
+            raise RuntimeError(f"搜索联系人失败: {e}") from e
 
     def _prepare_message_area(self) -> bool:
+        """准备消息输入区域。"""
         if not self.click_message_input_area():
             return False
         return True
 
     def _send_message_content(self, message: str, use_send_button: bool = False) -> bool:
+        """发送消息内容。"""
         try:
             if not self.copy_to_clipboard(message):
                 raise RuntimeError("无法复制消息到剪贴板")
@@ -256,9 +280,10 @@ class WeChat4:
                 pyautogui.press('enter')
             return True
         except Exception as e:
-            raise RuntimeError(f"发送消息内容失败: {e}")
+            raise RuntimeError(f"发送消息内容失败: {e}") from e
 
-    def SendMsg(self, msg: str, who: str | None = None, use_send_button: bool = False) -> WxResponse:
+    def send_msg(self, msg: str, who: str | None = None, use_send_button: bool = False) -> WxResponse:
+        """发送文本消息。"""
         try:
             if not self.activate_wechat():
                 return WxResponse.failure(
@@ -306,15 +331,17 @@ class WeChat4:
             )
 
     def check_wechat_running(self) -> bool:
+        """检查微信是否正在运行。"""
         try:
             for process in psutil.process_iter(['name']):
                 if process.info['name'] and ('WeChat' in process.info['name'] or '微信' in process.info['name']):
                     return True
             return False
         except Exception as e:
-            raise RuntimeError(f"检查微信运行状态失败: {e}")
+            raise RuntimeError(f"检查微信运行状态失败: {e}") from e
 
-    def SendFiles(self, filepath: str, who: str | None = None) -> WxResponse:
+    def send_files(self, filepath: str, who: str | None = None) -> WxResponse:
+        """发送文件。"""
         try:
             if not self.activate_wechat():
                 return WxResponse.failure(
@@ -385,20 +412,22 @@ class WeChat4:
             )
 
     def _set_clipboard_files(self, file_paths: list[str]) -> None:
+        """设置剪贴板文件。"""
         import ctypes
         from ctypes import wintypes
 
-        CF_HDROP = 15
-        GMEM_MOVEABLE = 0x0002
-        GMEM_ZEROINIT = 0x0040
-        GHND = GMEM_MOVEABLE | GMEM_ZEROINIT
+        cf_hdrop = 15
+        gmem_moveable = 0x0002
+        gmem_zeroinit = 0x0040
+        ghnd = gmem_moveable | gmem_zeroinit
 
-        class DROPFILES(ctypes.Structure):
+        class DropFiles(ctypes.Structure):
+            """文件拖放结构体。"""
             _fields_ = [
-                ("pFiles", wintypes.DWORD),
+                ("p_files", wintypes.DWORD),
                 ("pt", wintypes.POINT),
-                ("fNC", wintypes.BOOL),
-                ("fWide", wintypes.BOOL)
+                ("f_nc", wintypes.BOOL),
+                ("f_wide", wintypes.BOOL)
             ]
 
         kernel32 = ctypes.windll.kernel32
@@ -411,34 +440,34 @@ class WeChat4:
 
         data_wide = data.encode('utf-16le')
 
-        df_size = ctypes.sizeof(DROPFILES)
+        df_size = ctypes.sizeof(DropFiles)
         total_size = df_size + len(data_wide)
 
-        hGlobal = kernel32.GlobalAlloc(GHND, total_size)
-        if not hGlobal:
+        h_global = kernel32.GlobalAlloc(ghnd, total_size)
+        if not h_global:
             raise MemoryError("无法分配全局内存")
 
         try:
-            pGlobal = kernel32.GlobalLock(hGlobal)
-            if not pGlobal:
+            p_global = kernel32.GlobalLock(h_global)
+            if not p_global:
                 raise MemoryError("无法锁定全局内存")
 
             try:
-                df = DROPFILES()
-                df.pFiles = df_size
-                df.fWide = True
+                df = DropFiles()
+                df.p_files = df_size
+                df.f_wide = True
 
-                ctypes.memmove(pGlobal, ctypes.byref(df), df_size)
+                ctypes.memmove(p_global, ctypes.byref(df), df_size)
 
-                data_ptr = ctypes.cast(pGlobal + df_size, ctypes.c_void_p)
+                data_ptr = ctypes.cast(p_global + df_size, ctypes.c_void_p)
                 ctypes.memmove(data_ptr, data_wide, len(data_wide))
 
             finally:
-                kernel32.GlobalUnlock(hGlobal)
+                kernel32.GlobalUnlock(h_global)
 
             if user32.OpenClipboard(0):
                 user32.EmptyClipboard()
-                result = user32.SetClipboardData(CF_HDROP, hGlobal)
+                result = user32.SetClipboardData(cf_hdrop, h_global)
                 user32.CloseClipboard()
 
                 if not result:
@@ -447,11 +476,11 @@ class WeChat4:
                 raise RuntimeError("无法打开剪贴板")
 
         except Exception:
-            kernel32.GlobalFree(hGlobal)
+            kernel32.GlobalFree(h_global)
             raise
 
 
 if __name__ == "__main__":
-    wx = WeChat4()
-    result = wx.SendMsg("测试成功了！", "文件传输助手")
+    wx = WeChat()
+    result = wx.send_msg("测试成功了！", "文件传输助手")
     print(f"发送结果: {result}")
