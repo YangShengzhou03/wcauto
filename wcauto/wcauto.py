@@ -77,9 +77,14 @@ class WeChat4:
 
             hwnd = wechat_window.NativeWindowHandle
 
-            if wechat_window.IsOffscreen:
+            # 检查窗口是否最小化
+            is_minimized = windll.user32.IsIconic(hwnd)
+            
+            # 如果窗口在屏幕外或最小化，需要恢复窗口
+            if wechat_window.IsOffscreen or is_minimized:
+                # SW_RESTORE = 9，恢复窗口到正常状态
                 windll.user32.ShowWindow(hwnd, 9)
-                time.sleep(0.1)
+                time.sleep(1)
 
             activation_result = windll.user32.SetForegroundWindow(hwnd)
             if not activation_result:
@@ -90,7 +95,7 @@ class WeChat4:
                 if not activation_result:
                     raise RuntimeError("即使检查进程，仍未找到微信窗口")
 
-            time.sleep(0.1)
+            time.sleep(0.5)
             return True
         except Exception as e:
             raise RuntimeError(f"激活微信窗口失败: {e}")
@@ -125,7 +130,7 @@ class WeChat4:
             input_x, input_y = self._get_safe_coordinates(rect.right - 200, rect.bottom - 80)
 
             pyautogui.click(input_x, input_y)
-            time.sleep(0.05)
+            time.sleep(0.1)
             return True
 
         except Exception as e:
@@ -144,7 +149,7 @@ class WeChat4:
             send_x, send_y = self._get_safe_coordinates(rect.right - 100, rect.bottom - 50)
 
             pyautogui.click(send_x, send_y)
-            time.sleep(0.05)
+            time.sleep(0.1)
             return True
 
         except Exception as e:
@@ -157,7 +162,7 @@ class WeChat4:
 
             if not self.copy_to_clipboard(contact_name):
                 raise RuntimeError("无法复制联系人名称到剪贴板")
-            time.sleep(0.05)
+            time.sleep(0.1)
 
             if not self.paste_text():
                 raise RuntimeError("无法粘贴联系人名称")
@@ -181,7 +186,7 @@ class WeChat4:
         try:
             if not self.copy_to_clipboard(message):
                 raise RuntimeError("无法复制消息到剪贴板")
-            time.sleep(0.05)
+            time.sleep(0.1)
 
             if not self.paste_text():
                 raise RuntimeError("无法粘贴消息")
