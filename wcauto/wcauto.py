@@ -68,6 +68,7 @@ class WeChat4:
         try:
             wechat_window = self.find_wechat_window()
             if not wechat_window:
+                # 如果找不到窗口，尝试用快捷键显示微信
                 pyautogui.hotkey('ctrl', 'alt', 'w')
                 time.sleep(1)
 
@@ -80,20 +81,50 @@ class WeChat4:
             # 检查窗口是否最小化
             is_minimized = windll.user32.IsIconic(hwnd)
             
-            # 如果窗口在屏幕外或最小化，需要恢复窗口
-            if wechat_window.IsOffscreen or is_minimized:
-                # SW_RESTORE = 9，恢复窗口到正常状态
-                windll.user32.ShowWindow(hwnd, 9)
+            # 检查窗口是否可见
+            is_visible = windll.user32.IsWindowVisible(hwnd)
+            
+            # 检查窗口是否在桌面上（不在系统托盘）
+            is_on_desktop = not wechat_window.IsOffscreen
+            
+            # 检查窗口是否在前台
+            foreground_hwnd = windll.user32.GetForegroundWindow()
+            is_foreground = (hwnd == foreground_hwnd)
+            
+            # 如果窗口不可见、最小化、不在桌面上或不在前台，需要恢复窗口
+            if not is_visible or is_minimized or not is_on_desktop or not is_foreground:
+                # 首先尝试用快捷键显示微信（针对最小化到系统托盘的情况）
+                pyautogui.hotkey('ctrl', 'alt', 'w')
                 time.sleep(1)
+                
+                # 重新获取窗口状态
+                wechat_window = self.find_wechat_window()
+                if wechat_window:
+                    hwnd = wechat_window.NativeWindowHandle
+                    is_minimized = windll.user32.IsIconic(hwnd)
+                    is_visible = windll.user32.IsWindowVisible(hwnd)
+                    is_on_desktop = not wechat_window.IsOffscreen
+                
+                # 如果窗口仍然最小化或不在桌面上，恢复窗口
+                if is_minimized or not is_on_desktop:
+                    # SW_RESTORE = 9，恢复窗口到正常状态
+                    windll.user32.ShowWindow(hwnd, 9)
+                    time.sleep(1)
 
+            # 确保窗口在前台
             activation_result = windll.user32.SetForegroundWindow(hwnd)
             if not activation_result:
+                # 如果设置前台窗口失败，再次尝试快捷键
                 pyautogui.hotkey('ctrl', 'alt', 'w')
                 time.sleep(1)
 
                 activation_result = windll.user32.SetForegroundWindow(hwnd)
                 if not activation_result:
-                    raise RuntimeError("即使检查进程，仍未找到微信窗口")
+                    raise RuntimeError("无法将微信窗口设置到前台")
+
+            # 最终验证窗口状态
+            if not windll.user32.IsWindowVisible(hwnd) or windll.user32.IsIconic(hwnd):
+                raise RuntimeError("微信窗口未正确显示在桌面上")
 
             time.sleep(0.5)
             return True
@@ -157,8 +188,34 @@ class WeChat4:
 
     def _search_contact(self, contact_name: str) -> bool:
         try:
+            # 在搜索前再次验证微信窗口状态
+            wechat_window = self.find_wechat_window()
+            if not wechat_window:
+                raise RuntimeError("微信窗口未找到")
+            
+            hwnd = wechat_window.NativeWindowHandle
+            
+            # 验证窗口是否可见且不在最小化状态
+            if not windll.user32.IsWindowVisible(hwnd) or windll.user32.IsIconic(hwnd):
+                # 如果窗口不可见或最小化，重新激活
+                if not self.activate_wechat():
+                    raise RuntimeError("无法激活微信窗口进行搜索")
+            
+            # 确保窗口在前台
+            foreground_hwnd = windll.user32.GetForegroundWindow()
+            if hwnd != foreground_hwnd:
+                windll.user32.SetForegroundWindow(hwnd)
+                time.sleep(0.2)
+            
             pyautogui.hotkey('ctrl', 'f')
-            time.sleep(0.2)
+            time.sleep(0.5)  # 增加等待时间确保搜索框弹出
+
+            # 验证搜索框是否弹出（通过检查窗口是否有焦点变化）
+            current_foreground = windll.user32.GetForegroundWindow()
+            if current_foreground == hwnd:
+                # 如果焦点仍在主窗口，可能搜索框未弹出，再次尝试
+                pyautogui.hotkey('ctrl', 'f')
+                time.sleep(0.5)
 
             if not self.copy_to_clipboard(contact_name):
                 raise RuntimeError("无法复制联系人名称到剪贴板")
