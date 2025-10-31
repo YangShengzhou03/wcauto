@@ -1,8 +1,7 @@
 import time
 from wcauto import WeChat4
 
-# wx = WeChat4()
-# wx.SendMsg("文件传输", "文件传输助手")
+
 wx = WeChat4()
 time.sleep(5)
 
