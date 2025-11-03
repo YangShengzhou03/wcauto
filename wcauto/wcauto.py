@@ -178,7 +178,7 @@ class WeChat:
             if not rect:
                 return False
 
-            input_x, input_y = self._get_safe_coordinates(rect.right - 200, rect.bottom - 80)
+            input_x, input_y = self._get_safe_coordinates(rect.right - 300, rect.bottom - 80)
 
             pyautogui.click(input_x, input_y)
             time.sleep(0.1)
