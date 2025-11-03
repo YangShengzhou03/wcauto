@@ -6,6 +6,7 @@
   </p>
 
   <div>
+    <!-- 项目状态 -->
     <a href="https://github.com/YangShengzhou03/wcauto/stargazers">
       <img src="https://img.shields.io/github/stars/YangShengzhou03/wcauto?style=for-the-badge&logo=github&color=ffd33d&labelColor=000000" alt="GitHub Stars">
     </a>
@@ -21,29 +22,44 @@
     <a href="https://github.com/YangShengzhou03/wcauto/pulls">
       <img src="https://img.shields.io/github/issues-pr/YangShengzhou03/wcauto?style=for-the-badge&logo=github&color=orange&labelColor=000000" alt="GitHub Pull Requests">
     </a>
-    <a href="https://github.com/YangShengzhou03/wcauto/wiki">
-      <img src="https://img.shields.io/badge/Wiki-Documentation-blue?style=for-the-badge&logo=github" alt="Wiki Documentation">
+    <a href="https://github.com/YangShengzhou03/wcauto/actions">
+      <img src="https://img.shields.io/github/actions/workflow/status/YangShengzhou03/wcauto/ci.yml?style=for-the-badge&logo=github-actions&label=CI/CD" alt="CI/CD Status">
     </a>
   </div>
 
+  <br />
+
   <div>
+    <!-- 技术栈 -->
     <a href="https://www.python.org/">
       <img src="https://img.shields.io/badge/Python-3.8+-blue?style=for-the-badge&logo=python" alt="Python Version">
     </a>
     <a href="https://pyautogui.readthedocs.io/">
-      <img src="https://img.shields.io/badge/PyAutoGUI-0.9.53+-green?style=for-the-badge&logo=python" alt="PyAutoGUI Version">
+      <img src="https://img.shields.io/badge/PyAutoGUI-0.9.54-green?style=for-the-badge&logo=python" alt="PyAutoGUI Version">
     </a>
     <a href="https://github.com/yinkaisheng/Python-UIAutomation-for-Windows">
-      <img src="https://img.shields.io/badge/UIAutomation-2.0.15+-orange?style=for-the-badge&logo=windows" alt="UIAutomation Version">
+      <img src="https://img.shields.io/badge/UIAutomation-2.0.19-orange?style=for-the-badge&logo=windows" alt="UIAutomation Version">
     </a>
     <a href="https://pypi.org/project/pyperclip/">
-      <img src="https://img.shields.io/badge/Pyperclip-1.8.2+-yellow?style=for-the-badge&logo=python" alt="Pyperclip Version">
+      <img src="https://img.shields.io/badge/Pyperclip-1.8.2-yellow?style=for-the-badge&logo=python" alt="Pyperclip Version">
+    </a>
+    <a href="https://pypi.org/project/pywin32/">
+      <img src="https://img.shields.io/badge/pywin32-306-red?style=for-the-badge&logo=windows" alt="pywin32 Version">
     </a>
   </div>
 
   <br />
   
   [![Star History Chart](https://api.star-history.com/svg?repos=YangShengzhou03/wcauto&type=Date)](https://star-history.com/#YangShengzhou03/wcauto&Date)
+
+  <br />
+  
+  <div>
+    <a href="README_EN.md">English</a> | 
+    <a href="#-快速开始">快速开始</a> | 
+    <a href="#-api-文档">API文档</a> | 
+    <a href="#-常见问题">常见问题</a>
+  </div>
 
 </div>
 
@@ -131,15 +147,38 @@
 
 #### 1. 环境准备
 确保您的系统满足以下要求：
-- Windows 10/11 操作系统
-- Python 3.8 或更高版本
-- 微信桌面版（已登录）
+- **操作系统**: Windows 10/11 (64位)
+- **Python版本**: 3.8 或更高版本 (推荐 3.9+)
+- **微信版本**: 微信桌面版 (已登录并保持运行状态)
 
 #### 2. 安装 wcauto
 
+**方法一：从 GitHub 安装 (推荐)**
 ```bash
-# 使用 pip 安装最新版本
+# 安装最新版本
 pip install git+https://github.com/YangShengzhou03/wcauto.git
+
+# 或安装指定版本
+pip install wcauto==1.0.0
+```
+
+**方法二：源码安装 (开发模式)**
+```bash
+# 克隆项目
+git clone https://github.com/YangShengzhou03/wcauto.git
+cd wcauto
+
+# 安装生产依赖
+pip install -r requirements.txt
+
+# 开发模式安装
+pip install -e .
+```
+
+**方法三：仅安装核心依赖**
+```bash
+# 如果只需要核心功能，可以手动安装依赖
+pip install pyautogui==0.9.54 pyperclip==1.8.2 uiautomation==2.0.19 psutil==5.9.5 pywin32==306
 ```
 
 #### 3. 基础使用示例
@@ -149,6 +188,11 @@ from wcauto import WeChat
 
 # 创建微信自动化实例
 wx = WeChat()
+
+# 检查微信是否运行
+if not wx.check_wechat_running():
+    print("⚠️ 微信未运行，请先启动微信")
+    exit(1)
 
 # 发送消息给文件传输助手
 result = wx.send_msg("你好，这是一条测试消息！", "文件传输助手")

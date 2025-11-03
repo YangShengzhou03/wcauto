@@ -1,0 +1,124 @@
+[build-system]
+requires = ["setuptools>=68.2.2", "wheel>=0.41.3"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "wcauto"
+version = "1.0.0"
+description = "A Python-based automation library for WeChat Desktop"
+readme = "README.md"
+license = {text = "MIT"}
+authors = [
+    {name = "YangShengzhou03", email = ""}
+]
+keywords = ["wechat", "automation", "desktop", "windows", "pyautogui"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: Microsoft :: Windows",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Topic :: Communications :: Chat",
+    "Topic :: Office/Business",
+]
+
+requires-python = ">=3.8"
+dependencies = [
+    "pyautogui>=0.9.53,<1.0.0",
+    "pyperclip>=1.8.2,<2.0.0",
+    "uiautomation>=2.0.15,<3.0.0",
+    "psutil>=5.8.0,<6.0.0",
+    "pywin32>=300,<310",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.4.3",
+    "pytest-cov>=4.1.0",
+    "pytest-mock>=3.11.1",
+    "black>=23.11.0",
+    "flake8>=6.1.0",
+    "mypy>=1.7.1",
+    "isort>=5.12.0",
+    "pre-commit>=3.5.0",
+    "tox>=4.11.3",
+    "build>=1.0.3",
+    "twine>=4.0.2",
+    "sphinx>=7.2.6",
+    "sphinx-rtd-theme>=1.3.0",
+    "sphinx-autodoc-typehints>=1.25.1",
+]
+
+docs = [
+    "sphinx>=7.2.6",
+    "sphinx-rtd-theme>=1.3.0",
+    "sphinx-autodoc-typehints>=1.25.1",
+]
+
+[project.urls]
+Homepage = "https://github.com/YangShengzhou03/wcauto"
+Documentation = "https://github.com/YangShengzhou03/wcauto#readme"
+Repository = "https://github.com/YangShengzhou03/wcauto"
+Issues = "https://github.com/YangShengzhou03/wcauto/issues"
+
+[project.scripts]
+wcauto = "wcauto.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["wcauto*"]
+
+[tool.setuptools.package-data]
+"wcauto" = ["py.typed"]
+
+[tool.black]
+target-version = ["py38"]
+line-length = 88
+skip-string-normalization = true
+
+[tool.isort]
+profile = "black"
+multi_line_output = 3
+line_length = 88
+
+[tool.mypy]
+python_version = "3.8"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
+
+[tool.pytest.ini_options]
+minversion = "6.0"
+addopts = "-ra -q --strict-markers --strict-config"
+testpaths = ["tests"]
+markers = [
+    "slow: marks tests as slow (deselect with '-m \"not slow\"')",
+    "integration: marks tests as integration tests",
+]
+
+[tool.coverage.run]
+source = ["wcauto"]
+omit = [
+    "*/tests/*",
+    "*/test_*",
+]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "if self.debug:",
+    "if settings.DEBUG",
+    "raise AssertionError",
+    "raise NotImplementedError",
+    "if 0:",
+    "if __name__ == .__main__.:",
+    "class .*\\bProtocol\\):",
+    "@(abc\\.)?abstractmethod",
+]
