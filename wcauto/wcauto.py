@@ -1,12 +1,7 @@
-"""
-微信桌面版自动化操作库
-
-基于 Python 的微信桌面版自动化操作库，支持消息发送、文件传输、窗口控制等功能。
-"""
-
 import os
 import time
 from ctypes import windll
+from typing import Optional, Tuple, List
 
 import psutil
 import pyautogui
@@ -19,20 +14,13 @@ from wcauto.wx_response import WxResponse
 
 
 class WeChat:
-    """
-    微信自动化操作类
-    
-    提供微信桌面版的自动化操作功能，包括消息发送、文件传输、窗口控制等。
-    """
     def __init__(self) -> None:
-        """初始化微信自动化实例。"""
         self.screen_width, self.screen_height = pyautogui.size()
         self._wechat_window_cache = None
         if not self.activate_wechat():
             raise RuntimeError("微信未启动")
 
     def copy_to_clipboard(self, text: str) -> bool:
-        """复制文本到剪贴板。"""
         try:
             pyperclip.copy(text)
             return True
@@ -40,15 +28,13 @@ class WeChat:
             raise RuntimeError(f"复制到剪贴板失败: {e}") from e
 
     def paste_text(self) -> bool:
-        """从剪贴板粘贴文本。"""
         try:
             pyautogui.hotkey('ctrl', 'v')
             return True
         except Exception as e:
             raise RuntimeError(f"粘贴文本失败: {e}") from e
 
-    def find_wechat_window(self) -> auto.WindowControl | None:
-        """查找微信窗口。"""
+    def find_wechat_window(self) -> Optional[auto.WindowControl]:
         if self._wechat_window_cache:
             return self._wechat_window_cache
 
@@ -56,7 +42,6 @@ class WeChat:
             all_windows = []
 
             def collect_windows(control, depth=0):
-                """递归收集所有窗口。"""
                 if depth > 10:
                     return
                 if control.ControlTypeName == 'WindowControl':
@@ -81,11 +66,9 @@ class WeChat:
             raise RuntimeError(f"查找微信窗口失败: {e}") from e
 
     def activate_wechat(self) -> bool:
-        """激活微信窗口。"""
         try:
             wechat_window = self.find_wechat_window()
             if not wechat_window:
-                # 如果找不到窗口，尝试用快捷键显示微信
                 pyautogui.hotkey('ctrl', 'alt', 'w')
                 time.sleep(1)
 
@@ -95,26 +78,19 @@ class WeChat:
 
             hwnd = wechat_window.NativeWindowHandle
 
-            # 检查窗口是否最小化
             is_minimized = windll.user32.IsIconic(hwnd)
             
-            # 检查窗口是否可见
             is_visible = windll.user32.IsWindowVisible(hwnd)
             
-            # 检查窗口是否在桌面上（不在系统托盘）
             is_on_desktop = not wechat_window.IsOffscreen
             
-            # 检查窗口是否在前台
             foreground_hwnd = windll.user32.GetForegroundWindow()
             is_foreground = (hwnd == foreground_hwnd)
             
-            # 如果窗口不可见、最小化、不在桌面上或不在前台，需要恢复窗口
             if not is_visible or is_minimized or not is_on_desktop or not is_foreground:
-                # 首先尝试用快捷键显示微信（针对最小化到系统托盘的情况）
                 pyautogui.hotkey('ctrl', 'alt', 'w')
                 time.sleep(1)
                 
-                # 重新获取窗口状态
                 wechat_window = self.find_wechat_window()
                 if wechat_window:
                     hwnd = wechat_window.NativeWindowHandle
@@ -122,16 +98,12 @@ class WeChat:
                     is_visible = windll.user32.IsWindowVisible(hwnd)
                     is_on_desktop = not wechat_window.IsOffscreen
                 
-                # 如果窗口仍然最小化或不在桌面上，恢复窗口
                 if is_minimized or not is_on_desktop:
-                    # SW_RESTORE = 9，恢复窗口到正常状态
                     windll.user32.ShowWindow(hwnd, 9)
                     time.sleep(1)
 
-            # 确保窗口在前台
             activation_result = windll.user32.SetForegroundWindow(hwnd)
             if not activation_result:
-                # 如果设置前台窗口失败，再次尝试快捷键
                 pyautogui.hotkey('ctrl', 'alt', 'w')
                 time.sleep(1)
 
@@ -139,7 +111,6 @@ class WeChat:
                 if not activation_result:
                     raise RuntimeError("无法将微信窗口设置到前台")
 
-            # 最终验证窗口状态
             if not windll.user32.IsWindowVisible(hwnd) or windll.user32.IsIconic(hwnd):
                 raise RuntimeError("微信窗口未正确显示在桌面上")
 
@@ -149,7 +120,6 @@ class WeChat:
             raise RuntimeError(f"激活微信窗口失败: {e}") from e
 
     def find_chrome_window_and_close(self) -> bool:
-        """查找并关闭Chrome窗口。"""
         flags = False
         def find_window_callback(hwnd, _):
             nonlocal flags
@@ -163,12 +133,10 @@ class WeChat:
         win32gui.EnumWindows(find_window_callback, None)
         return flags
 
-    def _get_safe_coordinates(self, x: int, y: int) -> tuple[int, int]:
-        """获取安全的屏幕坐标。"""
+    def _get_safe_coordinates(self, x: int, y: int) -> Tuple[int, int]:
         return max(0, min(x, self.screen_width - 1)), max(0, min(y, self.screen_height - 1))
 
     def click_message_input_area(self) -> bool:
-        """点击消息输入区域。"""
         try:
             wechat_window = self.find_wechat_window()
             if not wechat_window:
@@ -188,7 +156,6 @@ class WeChat:
             raise RuntimeError(f"点击消息输入区域失败: {e}") from e
 
     def click_send_button(self) -> bool:
-        """点击发送按钮。"""
         try:
             wechat_window = self.find_wechat_window()
             if not wechat_window:
@@ -208,34 +175,27 @@ class WeChat:
             raise RuntimeError(f"点击发送按钮失败: {e}") from e
 
     def _search_contact(self, contact_name: str) -> bool:
-        """搜索联系人。"""
         try:
-            # 在搜索前再次验证微信窗口状态
             wechat_window = self.find_wechat_window()
             if not wechat_window:
                 raise RuntimeError("微信窗口未找到")
             
             hwnd = wechat_window.NativeWindowHandle
             
-            # 验证窗口是否可见且不在最小化状态
             if not windll.user32.IsWindowVisible(hwnd) or windll.user32.IsIconic(hwnd):
-                # 如果窗口不可见或最小化，重新激活
                 if not self.activate_wechat():
                     raise RuntimeError("无法激活微信窗口进行搜索")
             
-            # 确保窗口在前台
             foreground_hwnd = windll.user32.GetForegroundWindow()
             if hwnd != foreground_hwnd:
                 windll.user32.SetForegroundWindow(hwnd)
                 time.sleep(0.2)
             
             pyautogui.hotkey('ctrl', 'f')
-            time.sleep(0.5)  # 增加等待时间确保搜索框弹出
+            time.sleep(0.5)
 
-            # 验证搜索框是否弹出（通过检查窗口是否有焦点变化）
             current_foreground = windll.user32.GetForegroundWindow()
             if current_foreground == hwnd:
-                # 如果焦点仍在主窗口，可能搜索框未弹出，再次尝试
                 pyautogui.hotkey('ctrl', 'f')
                 time.sleep(0.5)
 
@@ -257,13 +217,11 @@ class WeChat:
             raise RuntimeError(f"搜索联系人失败: {e}") from e
 
     def _prepare_message_area(self) -> bool:
-        """准备消息输入区域。"""
         if not self.click_message_input_area():
             return False
         return True
 
     def _send_message_content(self, message: str, use_send_button: bool = False) -> bool:
-        """发送消息内容。"""
         try:
             if not self.copy_to_clipboard(message):
                 raise RuntimeError("无法复制消息到剪贴板")
@@ -282,8 +240,7 @@ class WeChat:
         except Exception as e:
             raise RuntimeError(f"发送消息内容失败: {e}") from e
 
-    def send_msg(self, msg: str, who: str | None = None, use_send_button: bool = False) -> WxResponse:
-        """发送文本消息。"""
+    def send_msg(self, msg: str, who: Optional[str] = None, use_send_button: bool = False) -> WxResponse:
         try:
             if not self.activate_wechat():
                 return WxResponse.failure(
@@ -331,7 +288,6 @@ class WeChat:
             )
 
     def check_wechat_running(self) -> bool:
-        """检查微信是否正在运行。"""
         try:
             for process in psutil.process_iter(['name']):
                 if process.info['name'] and ('WeChat' in process.info['name'] or '微信' in process.info['name']):
@@ -340,8 +296,7 @@ class WeChat:
         except Exception as e:
             raise RuntimeError(f"检查微信运行状态失败: {e}") from e
 
-    def send_files(self, filepath: str, who: str | None = None) -> WxResponse:
-        """发送文件。"""
+    def send_files(self, filepath: str, who: Optional[str] = None) -> WxResponse:
         try:
             if not self.activate_wechat():
                 return WxResponse.failure(
@@ -411,8 +366,7 @@ class WeChat:
                 }
             )
 
-    def _set_clipboard_files(self, file_paths: list[str]) -> None:
-        """设置剪贴板文件。"""
+    def _set_clipboard_files(self, file_paths: List[str]) -> None:
         import ctypes
         from ctypes import wintypes
 
@@ -422,7 +376,6 @@ class WeChat:
         ghnd = gmem_moveable | gmem_zeroinit
 
         class DropFiles(ctypes.Structure):
-            """文件拖放结构体。"""
             _fields_ = [
                 ("p_files", wintypes.DWORD),
                 ("pt", wintypes.POINT),

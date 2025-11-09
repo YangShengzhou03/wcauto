@@ -1,27 +1,5 @@
-# wcauto - WeChat Automation Tool
-# ===========================================
-# 生产环境依赖管理文件
-
-# 核心依赖 (必需)
-# -------------------------------
-pyautogui==0.9.54          # 鼠标键盘自动化控制，支持Windows GUI操作
-pyperclip==1.8.2           # 跨平台剪贴板操作，用于文本传输
-uiautomation==2.0.19       # Windows UI自动化框架，用于窗口控制和元素定位
-psutil==5.9.5              # 进程管理和系统资源监控
-pywin32==306               # Windows API接口，用于系统级操作
-
-# 环境要求说明
-# -------------------------------
-# - Python版本: 3.8及以上 (推荐3.9+)
-# - 操作系统: Windows 10/11 (64位)
-# - 微信版本: 微信桌面版 (已登录)
-
-# 安装说明
-# -------------------------------
-# 生产环境: pip install -r requirements.txt
-# 开发环境: pip install -r requirements.txt -r requirements-dev.txt
-
-# 版本锁定说明
-# -------------------------------
-# 使用精确版本号确保环境一致性
-# 定期更新依赖版本以获取安全修复和新功能
+pyautogui==0.9.53
+pyperclip==1.8.2
+uiautomation==2.0.15
+psutil==5.8.0
+pywin32==300
