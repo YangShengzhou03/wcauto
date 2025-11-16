@@ -1,5 +1,5 @@
 import time
-from wcauto import WeChat
+from wcauto2 import WeChat
 
 
 wx = WeChat()

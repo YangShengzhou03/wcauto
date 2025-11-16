@@ -1,7 +1,8 @@
 import os
 import time
-from ctypes import windll
-from typing import Optional, Tuple, List, Callable, TypeVar, Any
+import re
+from ctypes import windll, c_void_p, c_char, byref
+from typing import Optional, Tuple, List, Callable, TypeVar, Any, Dict
 
 import psutil
 import pyautogui
@@ -9,18 +10,24 @@ import pyperclip
 import uiautomation as auto
 import win32con
 import win32gui
+import win32process
+import win32api
 
 from wcauto.wx_response import WxResponse
 
 T = TypeVar('T')
 
 
-class WeChat:
+class WeChatMemory:
     def __init__(self) -> None:
         self.screen_width, self.screen_height = pyautogui.size()
         self._wechat_window_cache: Optional[auto.WindowControl] = None
+        self._wechat_process = None
+        self._process_handle = None
         if not self.activate_wechat():
             raise RuntimeError("微信未启动")
+        # 初始化微信进程信息
+        self._find_wechat_process()
 
     def _handle_operation(self, operation_name: str, operation: Callable[[], T], 
                          error_message: str = "操作失败") -> T:
@@ -364,6 +371,192 @@ class WeChat:
             if proc.info['name'] and ('WeChat' in proc.info['name'] or '微信' in proc.info['name']):
                 return True
         return False
+    
+    def _find_wechat_process(self) -> Optional[psutil.Process]:
+        """查找微信进程"""
+        try:
+            for proc in psutil.process_iter(['name', 'pid']):
+                if proc.info['name'] and ('WeChat.exe' == proc.info['name'] or '微信.exe' == proc.info['name']):
+                    self._wechat_process = proc
+                    return proc
+            return None
+        except Exception as e:
+            print(f"查找微信进程失败: {e}")
+            return None
+    
+    def _open_process_handle(self, pid: int) -> Optional[int]:
+        """打开进程句柄"""
+        try:
+            # PROCESS_VM_READ = 0x0010
+            # PROCESS_QUERY_INFORMATION = 0x0400
+            PROCESS_ALL_ACCESS = (0x000F0000 | 0x00100000 | 0xFFF)
+            handle = win32api.OpenProcess(PROCESS_ALL_ACCESS, False, pid)
+            self._process_handle = handle
+            return handle
+        except Exception as e:
+            print(f"打开进程句柄失败: {e}")
+            return None
+    
+    def _close_process_handle(self) -> None:
+        """关闭进程句柄"""
+        if self._process_handle:
+            try:
+                win32api.CloseHandle(self._process_handle)
+                self._process_handle = None
+            except Exception as e:
+                print(f"关闭进程句柄失败: {e}")
+    
+    def read_memory_string(self, address: int, size: int = 512) -> Optional[str]:
+        """从指定内存地址读取字符串"""
+        if not self._process_handle:
+            if not self._wechat_process:
+                self._find_wechat_process()
+            if self._wechat_process:
+                self._open_process_handle(self._wechat_process.pid)
+            else:
+                return None
+        
+        try:
+            buffer = (c_char * size)()
+            bytes_read = c_void_p()
+            result = windll.kernel32.ReadProcessMemory(
+                self._process_handle,
+                c_void_p(address),
+                byref(buffer),
+                size,
+                byref(bytes_read)
+            )
+            
+            if result:
+                # 尝试解码为UTF-8和GBK
+                try:
+                    return buffer.value.decode('utf-8').strip('\x00')
+                except UnicodeDecodeError:
+                    try:
+                        return buffer.value.decode('gbk').strip('\x00')
+                    except UnicodeDecodeError:
+                        return None
+            return None
+        except Exception as e:
+            print(f"读取内存失败: {e}")
+            return None
+    
+    def scan_for_strings(self, pattern: Optional[str] = None, min_length: int = 5, max_size: int = 1024*1024*10) -> List[str]:
+        """扫描微信进程内存中的字符串
+        
+        Args:
+            pattern: 可选的正则表达式模式，用于过滤字符串
+            min_length: 最小字符串长度
+            max_size: 最大扫描内存大小
+            
+        Returns:
+            找到的字符串列表
+        """
+        if not self._wechat_process:
+            self._find_wechat_process()
+            if not self._wechat_process:
+                return []
+        
+        handle = self._open_process_handle(self._wechat_process.pid)
+        if not handle:
+            return []
+        
+        found_strings = set()
+        regex = re.compile(pattern) if pattern else None
+        
+        try:
+            # 获取进程的内存映射
+            modules = win32process.EnumProcessModules(handle)
+            
+            for module in modules:
+                try:
+                    module_info = win32process.GetModuleInformation(
+                        handle, module, win32process.ModuleInfo()
+                    )
+                    base_address = module_info.lpBaseOfDll
+                    module_size = module_info.SizeOfImage
+                    
+                    # 限制扫描大小
+                    if module_size > max_size:
+                        continue
+                    
+                    # 读取内存块
+                    buffer = win32process.ReadProcessMemory(handle, base_address, module_size)
+                    
+                    # 寻找连续的可打印字符
+                    current_str = []
+                    for byte in buffer:
+                        # 可打印字符范围（包括中文）
+                        if 32 <= byte <= 126 or byte in [9, 10, 13] or (128 <= byte <= 255):
+                            current_str.append(chr(byte))
+                        else:
+                            if len(current_str) >= min_length:
+                                text = ''.join(current_str)
+                                # 过滤掉大部分是空格或不可打印字符的字符串
+                                if len(text.strip()) >= min_length // 2:
+                                    # 如果指定了模式，进行匹配
+                                    if not regex or regex.search(text):
+                                        # 尝试解码可能的多字节字符
+                                        try:
+                                            # 检查是否包含中文（简单判断）
+                                            has_chinese = any(ord(c) > 127 for c in text)
+                                            if has_chinese:
+                                                # 尝试不同的编码
+                                                for encoding in ['utf-8', 'gbk', 'gb2312']:
+                                                    try:
+                                                        # 这里简化处理，实际需要更复杂的逻辑
+                                                        found_strings.add(text)
+                                                        break
+                                                    except:
+                                                        continue
+                                            else:
+                                                found_strings.add(text)
+                                        except:
+                                            pass
+                            current_str = []
+                    
+                except Exception as e:
+                    # 跳过无法读取的模块
+                    continue
+                    
+        except Exception as e:
+            print(f"扫描内存失败: {e}")
+        finally:
+            self._close_process_handle()
+        
+        return list(found_strings)
+    
+    def get_visible_chat_messages(self) -> List[str]:
+        """获取当前在屏幕上可见的聊天消息
+        
+        Returns:
+            聊天消息列表
+        """
+        # 由于无法确定具体的消息内存地址模式，这里采用更通用的方法
+        # 扫描内存中可能的聊天消息模式
+        patterns = [
+            r'[\u4e00-\u9fa5]{2,}',  # 至少2个中文字符
+            r'^[a-zA-Z0-9_\-\.]+@[a-zA-Z0-9_\-\.]+\.[a-zA-Z0-9_\-\.]+$',  # 邮箱
+            r'^https?://[\w\-]+(\.[\w\-]+)+([\w\-\.,@?^=%&:/~\+#]*[\w\-\@?^=%&/~\+#])?$',  # URL
+        ]
+        
+        all_messages = []
+        
+        # 尝试不同的模式扫描
+        for pattern in patterns:
+            messages = self.scan_for_strings(pattern=pattern, min_length=5)
+            all_messages.extend(messages)
+        
+        # 也进行通用扫描，捕获其他可能的消息
+        general_messages = self.scan_for_strings(min_length=10)
+        all_messages.extend(general_messages)
+        
+        # 去重并按长度排序（长消息更可能是有意义的）
+        unique_messages = list(set(all_messages))
+        unique_messages.sort(key=len, reverse=True)
+        
+        # 返回前100条最有可能的消息
+        return unique_messages[:100]
 
     def _set_clipboard_files(self, filepaths: List[str]) -> None:
         import win32clipboard
